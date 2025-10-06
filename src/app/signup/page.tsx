@@ -24,7 +24,7 @@ export default function SignupPage() {
         </div>
 
         <div className="mx-auto my-4 w-fit rounded-full bg-white p-2 ring-1 ring-slate-200 shadow-sm">
-          <Image src="/file.svg" alt="PLASMIDA crest" width={68} height={68} className="rounded-full" priority />
+          <Image src="/images/logo.png" alt="PLASMIDA crest" width={68} height={68} className="rounded-full" priority />
         </div>
 
         <h2 className="text-lg font-semibold text-slate-800 mb-2">Create your account</h2>

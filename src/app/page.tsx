@@ -18,7 +18,7 @@ export default function HomeLogin() {
 
       <section className="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-xl p-8 text-center">
         <div className="mx-auto mb-4 w-fit rounded-full bg-white p-2 ring-1 ring-slate-200 shadow-sm">
-          <Image src="/file.svg" alt="PLASMIDA crest" width={84} height={84} className="rounded-full" priority />
+          <Image src="/images/logo.png" alt="PLASMIDA crest" width={84} height={84} className="rounded-full" priority />
         </div>
 
         <h1 className="text-xl md:text-2xl font-bold text-slate-800 mb-0">Welcome to PLASMIDA TrainMaster</h1>
