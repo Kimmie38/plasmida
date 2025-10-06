@@ -35,35 +35,41 @@ export default function HomeLogin() {
         </div>
 
         <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-          <label className="block text-left">
-            <div className="flex h-11 items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3">
-              <FiMail className="text-slate-400 text-lg" aria-hidden />
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
-                autoComplete="email"
-                aria-label="Email"
-              />
+          <div className="text-center">
+            <span className="text-sm text-slate-500 mb-2 inline-block">Email</span>
+            <div className="mx-auto max-w-full">
+              <div className="flex h-11 items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3">
+                <FiMail className="text-slate-400 text-lg" aria-hidden />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
+                  autoComplete="email"
+                  aria-label="Email"
+                />
+              </div>
             </div>
-          </label>
+          </div>
 
-          <label className="block text-left">
-            <div className="flex h-11 items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3">
-              <FiLock className="text-slate-400 text-lg" aria-hidden />
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
-                autoComplete="current-password"
-                aria-label="Password"
-              />
+          <div className="text-center">
+            <span className="text-sm text-slate-500 mb-2 inline-block">Password</span>
+            <div className="mx-auto max-w-full">
+              <div className="flex h-11 items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3">
+                <FiLock className="text-slate-400 text-lg" aria-hidden />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
+                  autoComplete="current-password"
+                  aria-label="Password"
+                />
+              </div>
             </div>
-          </label>
+          </div>
 
           <button className="w-full h-11 bg-slate-900 text-white rounded-xl font-semibold hover:bg-black transition">Sign In</button>
         </form>
