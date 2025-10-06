@@ -72,6 +72,11 @@ export default function HomeLogin() {
           </div>
 
           <button className="w-full h-11 bg-slate-900 text-white rounded-xl font-semibold hover:bg-black transition">Sign In</button>
+
+          <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
+            <a href="#" className="hover:underline text-slate-600">Forgot password?</a>
+            <p className="text-slate-600">Need an account? <a href="#" className="font-medium text-slate-900 hover:underline">Sign up</a></p>
+          </div>
         </form>
       </section>
     </main>
