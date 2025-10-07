@@ -30,7 +30,7 @@ export default function UploadPage() {
 
         <section className="tips bg-white rounded-lg p-6 shadow-sm border border-slate-100">
           <h3 className="text-md font-semibold mb-4">Tips for Better Organization</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm text-slate-600">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-600">
             <div>
               <h4 className="font-medium text-slate-800 mb-2">File Naming</h4>
               <p>Use descriptive names like "Leadership-Workshop-Q1-2024" for easier searching</p>
