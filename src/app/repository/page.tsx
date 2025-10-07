@@ -20,7 +20,7 @@ export default function RepositoryPage() {
   }));
 
   return (
-    <div className="repository-page p-8">
+    <div className="repository-page p-8 bg-white min-h-screen">
       <header className="repository-header mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-800">Training Reports Repository</h1>
