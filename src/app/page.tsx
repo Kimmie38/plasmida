@@ -3,12 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FiLock, FiMail } from "react-icons/fi";
 
 export default function HomeLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-gradient-to-r from-white via-sky-50 to-white overflow-hidden">
@@ -35,7 +37,7 @@ export default function HomeLogin() {
           <hr className="flex-1 border-slate-200" />
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); router.push('/repository'); }}>
           <div className="text-center">
             <span className="text-sm text-slate-500 mb-2 inline-block">Email</span>
             <div className="mx-auto max-w-full">
