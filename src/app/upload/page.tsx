@@ -28,24 +28,27 @@ export default function UploadPage() {
           </div>
         </section>
 
-        <section className="tips bg-white rounded-lg p-4 shadow-sm">
-          <h3 className="text-md font-semibold mb-3">Tips for Better Organization</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-slate-600">
+        <section className="tips bg-white rounded-lg p-6 shadow-sm border border-slate-100">
+          <h3 className="text-md font-semibold mb-4">Tips for Better Organization</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm text-slate-600">
             <div>
-              <div className="flex items-center gap-2 mb-2"><FiInfo className="text-slate-400" /><strong>File Naming</strong></div>
-              <div>Use descriptive names like "Leadership-Workshop-Q1-2024" for easier searching</div>
+              <h4 className="font-medium text-slate-800 mb-2">File Naming</h4>
+              <p>Use descriptive names like "Leadership-Workshop-Q1-2024" for easier searching</p>
             </div>
+
             <div>
-              <div className="flex items-center gap-2 mb-2"><FiInfo className="text-slate-400" /><strong>Categories</strong></div>
-              <div>Choose the most relevant category to help with filtering and organization</div>
+              <h4 className="font-medium text-slate-800 mb-2">Categories</h4>
+              <p>Choose the most relevant category to help with filtering and organization</p>
             </div>
+
             <div>
-              <div className="flex items-center gap-2 mb-2"><FiInfo className="text-slate-400" /><strong>Tags</strong></div>
-              <div>Add relevant tags like "quarterly", "remote", "certification" for better searchability</div>
+              <h4 className="font-medium text-slate-800 mb-2">Tags</h4>
+              <p>Add relevant tags like "quarterly", "remote", "certification" for better searchability</p>
             </div>
+
             <div>
-              <div className="flex items-center gap-2 mb-2"><FiInfo className="text-slate-400" /><strong>Details</strong></div>
-              <div>Include instructor names, dates, and participant counts for complete documentation</div>
+              <h4 className="font-medium text-slate-800 mb-2">Details</h4>
+              <p>Include instructor names, dates, and participant counts for complete documentation</p>
             </div>
           </div>
         </section>
