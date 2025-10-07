@@ -6,7 +6,7 @@ import Sidebar from "./Sidebar";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "/";
-  const showSidebar = pathname.toLowerCase().startsWith("/repository");
+  const showSidebar = pathname.toLowerCase().startsWith("/repository") || pathname.toLowerCase().startsWith("/upload");
 
   return (
     <div className="app-root min-h-screen flex">
