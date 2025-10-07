@@ -79,17 +79,37 @@ export default function BrowsePage() {
         <h2 className="text-lg font-semibold mb-4">Categories Overview</h2>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {categories.map((c) => (
-            <Link key={c.name} href="#" className="category-card group rounded-lg border border-slate-100 bg-white p-4 text-center hover:shadow">
-              <div className="flex flex-col items-center gap-2">
-                <div className="h-10 w-10 rounded bg-slate-50 flex items-center justify-center text-slate-600">
-                  <FiFolder />
+          {categories.map((c) => {
+            const colorMap: Record<string, string> = {
+              Leadership: 'bg-purple-100 text-purple-700',
+              Technical: 'bg-blue-100 text-blue-700',
+              Safety: 'bg-red-100 text-red-700',
+              Compliance: 'bg-amber-100 text-amber-700',
+              Sales: 'bg-emerald-100 text-emerald-700',
+              Communication: 'bg-pink-100 text-pink-700',
+              Management: 'bg-orange-100 text-orange-700',
+              HR: 'bg-indigo-100 text-indigo-700',
+              Onboarding: 'bg-teal-100 text-teal-700',
+              Assessment: 'bg-cyan-100 text-cyan-700',
+            };
+            const badgeClass = colorMap[c.name] || 'bg-slate-100 text-slate-700';
+
+            return (
+              <Link key={c.name} href="#" className="category-card group rounded-lg border border-slate-100 bg-white p-4 text-center hover:shadow">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="h-10 w-10 rounded bg-slate-50 flex items-center justify-center text-slate-600">
+                    <FiFolder />
+                  </div>
+                  <div className="text-sm font-medium text-slate-800">{c.name}</div>
+                  <div className="mt-2">
+                    <span className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${badgeClass}`}>
+                      {c.count} reports
+                    </span>
+                  </div>
                 </div>
-                <div className="text-sm font-medium text-slate-800">{c.name}</div>
-                <div className="text-xs text-slate-500">{c.count} reports</div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </section>
     </div>
