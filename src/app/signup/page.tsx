@@ -11,7 +11,7 @@ export default function SignupPage() {
   const [confirm, setConfirm] = useState("");
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center bg-gradient-to-r from-white via-sky-50 to-white overflow-hidden">
+    <main className="relative flex min-h-screen items-center justify-center bg-gradient-to-r from-white via-sky-50 to-white overflow-hidden lg:ml-72">
       <div aria-hidden className="pointer-events-none absolute -left-36 top-6 h-72 w-72 rounded-full bg-sky-100/60 blur-3xl" />
       <div aria-hidden className="pointer-events-none absolute -right-36 bottom-6 h-80 w-80 rounded-full bg-sky-100/40 blur-3xl" />
 
