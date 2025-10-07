@@ -3,6 +3,7 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
+import ClientErrorHandler from "./ClientErrorHandler";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "/";
