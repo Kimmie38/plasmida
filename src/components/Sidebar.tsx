@@ -27,7 +27,7 @@ export default function Sidebar() {
         <h4 className="text-xs text-slate-400 uppercase tracking-wider mb-2">Navigation</h4>
         <ul className="space-y-1">
           <li>
-            <Link href="#" className="nav-item relative flex items-center gap-3 w-full rounded-md px-3 py-2 bg-sky-50 text-sky-700 font-medium">
+            <Link href="/repository" className="nav-item relative flex items-center gap-3 w-full rounded-md px-3 py-2 bg-sky-50 text-sky-700 font-medium">
               <span className="indicator absolute left-0 top-0 bottom-0 w-1 bg-sky-500 rounded-tr-md rounded-br-md" aria-hidden />
               <FiDatabase className="text-lg ml-2" aria-hidden />
               <span className="text-sm">Repository</span>
@@ -35,7 +35,7 @@ export default function Sidebar() {
           </li>
 
           <li>
-            <Link href="#" className="nav-item flex items-center gap-3 w-full rounded-md px-3 py-2 text-slate-700 hover:bg-slate-50">
+            <Link href="/upload" className="nav-item flex items-center gap-3 w-full rounded-md px-3 py-2 text-slate-700 hover:bg-slate-50">
               <FiUpload className="text-lg text-slate-500" aria-hidden />
               <span className="text-sm">Upload Report</span>
             </Link>
