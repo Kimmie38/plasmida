@@ -5,16 +5,24 @@ import { FiDatabase, FiUpload, FiSearch, FiUsers, FiFolder } from "react-icons/f
 
 export default function Sidebar() {
   return (
-    <aside className="sidebar-root bg-white border-r border-slate-100 min-h-screen w-72 flex flex-col">
-      <div className="sidebar-brand flex items-center gap-3 mb-6">
+    <aside className="sidebar-root fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-100 flex flex-col z-20 overflow-y-auto">
+      <div className="sidebar-brand flex items-center gap-3 mb-6 px-3 mt-4">
         <div className="brand-logo flex items-center justify-center h-12 w-12 rounded-lg bg-sky-100 text-sky-700 font-semibold">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor">
             <path strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M8 6h8M8 12h8M8 18h8M4 6h.01M4 12h.01M4 18h.01" />
           </svg>
         </div>
-        <div className="brand-text">
+        <div className="brand-text flex-1">
           <h3 className="text-sm font-semibold text-slate-800">TrainDocs</h3>
           <p className="text-xs text-slate-500">Training Reports Repository</p>
+        </div>
+      </div>
+
+      <div className="user-card p-3 rounded-lg bg-slate-50 flex items-center gap-3 mx-3">
+        <div className="user-avatar h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-medium">U</div>
+        <div className="user-info text-sm">
+          <div className="font-medium text-slate-800">User</div>
+          <div className="text-xs text-slate-500">Manage training reports</div>
         </div>
       </div>
 
@@ -72,13 +80,6 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <div className="mt-auto user-card p-3 rounded-lg bg-slate-50 flex items-center gap-3">
-        <div className="user-avatar h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-medium">U</div>
-        <div className="user-info text-sm">
-          <div className="font-medium text-slate-800">User</div>
-          <div className="text-xs text-slate-500">Manage training reports</div>
-        </div>
-      </div>
     </aside>
   );
 }
