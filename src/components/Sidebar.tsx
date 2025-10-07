@@ -48,7 +48,7 @@ export default function Sidebar() {
           </li>
 
           <li>
-            <Link href="#" className={`nav-item flex items-center gap-3 w-full rounded-md px-3 py-2 ${pathname.toLowerCase().startsWith('/browse') ? 'bg-sky-50 text-sky-700 font-medium' : 'text-slate-700 hover:bg-slate-50'}`}>
+            <Link href="/browse" className={`nav-item flex items-center gap-3 w-full rounded-md px-3 py-2 ${pathname.toLowerCase().startsWith('/browse') ? 'bg-sky-50 text-sky-700 font-medium' : 'text-slate-700 hover:bg-slate-50'}`}>
               <FiSearch className="text-lg text-slate-500" aria-hidden />
               <span className="text-sm">Browse</span>
             </Link>
