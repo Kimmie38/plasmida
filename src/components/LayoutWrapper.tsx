@@ -11,6 +11,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   return (
     <div className="app-root min-h-screen flex">
+      <ClientErrorHandler />
       {showSidebar && <Sidebar />}
       <main className={`flex-1 ${showSidebar ? 'ml-72' : ''}`}>{children}</main>
     </div>
