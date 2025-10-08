@@ -6,7 +6,7 @@ import AddStaffModal from "@/components/AddStaffModal";
 
 export default function StaffPage() {
   const [staff, setStaff] = useState([
-    { name: 'Adebayo Johnson', email: 'adebayo.johnson@company.com', dept: 'Information Technology', unit: 'Software Development', status: 'active', value: '₦650,000', date: 'Jan 15, 2024' },
+    { name: 'Adebayo Johnson', email: 'adebayo.johnson@company.com', dept: 'Information Technology', unit: 'Software Developmet', status: 'active', value: '₦650,000', date: 'Jan 15, 2024' },
     { name: 'Fatima Abubakar', email: 'fatima.abubakar@company.com', dept: 'Human Resources', unit: 'Talent Acquisition', status: 'active', value: '₦650,000', date: 'Feb 1, 2024' },
     { name: 'Chinedu Okafor', email: 'chinedu.okafor@company.com', dept: 'Sales & Marketing', unit: 'Digital Marketing', status: 'active', value: '₦920,000', date: 'Mar 1, 2024' },
     { name: 'Aminat Bello', email: 'aminat.bello@company.com', dept: 'Finance', unit: 'Financial Analysis', status: 'active', value: '₦750,000', date: 'Apr 15, 2024' },
