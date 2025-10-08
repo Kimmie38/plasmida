@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import {
   FiFileText,
   FiCalendar,
@@ -219,8 +219,41 @@ export default function RepositoryPage() {
       });
   }, [dummyCards, search, category, type, sort]);
 
+  // Carousel state for mobile
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+    let raf = 0;
+
+    const onScroll = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const scrollLeft = el.scrollLeft;
+        const cardWidth = el.clientWidth * 0.9 + 16; // item width + gap
+        const idx = Math.round(scrollLeft / cardWidth);
+        setActiveIndex(Math.max(0, Math.min(filteredCards.length - 1, idx)));
+      });
+    };
+
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [filteredCards.length]);
+
+  const scrollToIndex = (i: number) => {
+    const el = carouselRef.current;
+    if (!el) return;
+    const cardWidth = el.clientWidth * 0.9 + 16;
+    el.scrollTo({ left: i * cardWidth, behavior: "smooth" });
+  };
+
   return (
-    <div className="repository-page p-8 bg-gray-50 min-h-screen">
+    <div className="repository-page p-4 md:p-8 bg-gray-50 min-h-screen">
       <header className="repository-header mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-800">Training Reports Repository</h1>
@@ -280,7 +313,101 @@ export default function RepositoryPage() {
         </select>
       </section>
 
-      <section className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Mobile carousel: visible on small screens only */}
+      <section className="md:hidden">
+        <div
+          ref={carouselRef}
+          className="report-carousel flex overflow-x-auto snap-x snap-mandatory gap-4 py-4 px-2 touch-pan-x scrollbar-hide"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {filteredCards.map((c) => (
+            <article key={c.id} className="card flex-shrink-0 w-[86%] sm:w-[72%] rounded-lg border border-slate-100 bg-white p-4 shadow-sm snap-center mx-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="file-icon h-8 w-8 rounded-md bg-slate-50 flex items-center justify-center text-sky-600">
+                    <FiFileText />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3 className="text-md font-semibold text-slate-800">{c.title}</h3>
+                      <div className="flex flex-col items-end gap-2">
+                        <span className={`${categoryColor(c.tags[0])} rounded-full px-2 py-1 text-xs font-medium`}>{c.tags[0]}</span>
+                        <span className={`${statusColor(c.status)} rounded-full px-2 py-1 text-xs font-medium`}>{c.status}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                      <span className="text-slate-500 font-medium">{c.fileName}</span>
+                    </div>
+
+                    <p className="text-sm text-slate-500 mt-3 line-clamp-3">{c.description}</p>
+
+                    <div className="mt-4 space-y-2 text-sm text-slate-600">
+                      {c.price && (
+                        <div className="flex items-center gap-3">
+                          <FiDollarSign className="text-slate-400" />
+                          <span className="text-slate-700 font-medium">{c.price}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-3">
+                        <FiCalendar className="text-slate-400" />
+                        <span>{c.date}</span>
+                      </div>
+
+                      {c.duration && (
+                        <div className="flex items-center gap-3">
+                          <FiClock className="text-slate-400" />
+                          <span>{c.duration}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-3">
+                        <FiUsers className="text-slate-400" />
+                        <span>{c.contact}</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <FiMapPin className="text-slate-400" />
+                        <span>{c.location}</span>
+                      </div>
+
+                      <div className="pt-2 flex flex-wrap gap-2">
+                        {c.tags.map((t) => (
+                          <span key={t} className="text-xs bg-slate-100 px-2 py-1 rounded-md text-slate-700">{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-xs text-slate-400">{c.size} · {c.uploaded}</div>
+                <div className="flex items-center gap-2">
+                  <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiEye /></button>
+                  <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiDownload /></button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {/* Dots */}
+        <div className="dots mt-2 flex items-center justify-center gap-2">
+          {filteredCards.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => scrollToIndex(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-2 w-2 rounded-full ${i === activeIndex ? 'bg-sky-600' : 'bg-slate-300'}`}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Grid for md+ */}
+      <section className="hidden md:grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {filteredCards.map((c) => (
           <article key={c.id} className="card rounded-lg border border-slate-100 bg-white p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3">
