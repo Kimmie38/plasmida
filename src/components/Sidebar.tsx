@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiDatabase, FiUpload, FiSearch, FiUsers, FiFolder } from "react-icons/fi";
+import { FiDatabase, FiUpload, FiSearch, FiUsers, FiFolder, FiSettings } from "react-icons/fi";
 
 export default function Sidebar() {
   const pathname = usePathname() || "/";
   const isRepo = pathname.toLowerCase().startsWith("/repository");
   const isUpload = pathname.toLowerCase().startsWith("/upload");
   const isStaff = pathname.toLowerCase().startsWith("/staff");
+  const isSettings = pathname.toLowerCase().startsWith("/settings");
 
   return (
     <aside className="sidebar-root fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-100 flex flex-col z-20 overflow-y-auto">
@@ -60,6 +61,14 @@ export default function Sidebar() {
               {isStaff && <span className="indicator absolute left-0 top-0 bottom-0 w-1 bg-sky-500 rounded-tr-md rounded-br-md" aria-hidden />}
               <FiUsers className="text-lg text-slate-500" aria-hidden />
               <span className="text-sm">Staff</span>
+            </Link>
+          </li>
+
+          <li>
+            <Link href="/settings" className={`nav-item relative flex items-center gap-3 w-full rounded-md px-3 py-2 ${isSettings ? 'bg-sky-50 text-sky-700 font-medium' : 'text-slate-700 hover:bg-slate-50'}`}>
+              {isSettings && <span className="indicator absolute left-0 top-0 bottom-0 w-1 bg-sky-500 rounded-tr-md rounded-br-md" aria-hidden />}
+              <FiSettings className="text-lg text-slate-500" aria-hidden />
+              <span className="text-sm">Settings</span>
             </Link>
           </li>
         </ul>

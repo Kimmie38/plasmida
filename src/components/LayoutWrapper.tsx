@@ -7,7 +7,7 @@ import ClientErrorHandler from "./ClientErrorHandler";
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "/";
-  const showSidebar = pathname.toLowerCase().startsWith("/repository") || pathname.toLowerCase().startsWith("/upload") || pathname.toLowerCase().startsWith("/browse") || pathname.toLowerCase().startsWith('/staff');
+  const showSidebar = pathname.toLowerCase().startsWith("/repository") || pathname.toLowerCase().startsWith("/upload") || pathname.toLowerCase().startsWith("/browse") || pathname.toLowerCase().startsWith('/staff') || pathname.toLowerCase().startsWith('/settings');
 
   return (
     <div className="app-root min-h-screen flex">
