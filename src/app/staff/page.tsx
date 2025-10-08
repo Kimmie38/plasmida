@@ -16,34 +16,36 @@ export default function StaffPage() {
     <div className="staff-page p-8 bg-gray-50 min-h-screen">
       <header className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-800">Staff Management</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage all staff members for the agency</p>
+          <h1 className="text-2xl font-semibold text-black">Staff Management</h1>
+          <p className="text-sm text-gray-700 mt-1">Manage all staff members for the agency</p>
         </div>
 
-        <button className="inline-flex items-center gap-2 h-10 px-3 rounded bg-sky-600 text-white">+ Add New Staff</button>
+        <button className="inline-flex items-center gap-2 h-10 px-3 rounded bg-sky-600 text-white hover:bg-sky-700 transition">
+          + Add New Staff
+        </button>
       </header>
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="stat-card rounded-lg bg-white p-4 border border-slate-100 shadow-sm">
-          <div className="text-sm text-slate-500">Total Staff</div>
-          <div className="text-xl font-semibold text-slate-800 mt-2">8</div>
+        <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
+          <div className="text-sm text-gray-700">Total Staff</div>
+          <div className="text-xl font-semibold text-black mt-2">8</div>
         </div>
 
-        <div className="stat-card rounded-lg bg-white p-4 border border-slate-100 shadow-sm">
-          <div className="text-sm text-slate-500">Active Staff</div>
-          <div className="text-xl font-semibold text-slate-800 mt-2">7</div>
+        <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
+          <div className="text-sm text-gray-700">Active Staff</div>
+          <div className="text-xl font-semibold text-black mt-2">7</div>
         </div>
 
-        <div className="stat-card rounded-lg bg-white p-4 border border-slate-100 shadow-sm">
-          <div className="text-sm text-slate-500">Avg. Satisfaction</div>
-          <div className="text-xl font-semibold text-slate-800 mt-2">4.4</div>
+        <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
+          <div className="text-sm text-gray-700">Avg. Satisfaction</div>
+          <div className="text-xl font-semibold text-black mt-2">4.4</div>
         </div>
       </section>
 
-      <section className="bg-white rounded-lg border border-slate-100 shadow-sm p-4">
+      <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-slate-500">
+            <tr className="text-left text-gray-700">
               <th className="py-3 px-4">Staff Name</th>
               <th className="py-3 px-4">Department</th>
               <th className="py-3 px-4">Unit</th>
@@ -55,21 +57,27 @@ export default function StaffPage() {
           </thead>
           <tbody>
             {staff.map((s) => (
-              <tr key={s.email} className="border-t border-slate-100">
+              <tr key={s.email} className="border-t border-gray-200">
                 <td className="py-3 px-4">
-                  <div className="font-medium">{s.name}</div>
-                  <div className="text-xs text-slate-500">{s.email}</div>
+                  <div className="font-medium text-gray-800">{s.name}</div>
+                  <div className="text-xs text-gray-700">{s.email}</div>
                 </td>
-                <td className="py-3 px-4">{s.dept}</td>
-                <td className="py-3 px-4">{s.unit}</td>
+                <td className="py-3 px-4 text-gray-800">{s.dept}</td>
+                <td className="py-3 px-4 text-gray-800">{s.unit}</td>
                 <td className="py-3 px-4">
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs ${s.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                  <span
+                    className={`inline-block px-3 py-1 rounded-full text-xs ${
+                      s.status === "active"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
                     {s.status}
                   </span>
                 </td>
-                <td className="py-3 px-4">{s.value}</td>
-                <td className="py-3 px-4">{s.date}</td>
-                <td className="py-3 px-4">•••</td>
+                <td className="py-3 px-4 text-gray-800">{s.value}</td>
+                <td className="py-3 px-4 text-gray-800">{s.date}</td>
+                <td className="py-3 px-4 text-gray-800">•••</td>
               </tr>
             ))}
           </tbody>

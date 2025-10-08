@@ -76,7 +76,7 @@ export default function BrowsePage() {
       </section>
 
       <section className="categories bg-white rounded-lg p-6 border border-slate-100 shadow-sm">
-        <h2 className="text-lg font-semibold mb-4">Categories Overview</h2>
+        <h2 className="text-lg font-semibold mb-4 text-black">Categories Overview</h2>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {categories.map((c) => {

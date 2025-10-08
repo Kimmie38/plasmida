@@ -1,8 +1,89 @@
-import Link from "next/link";
-import { FiFileText, FiCalendar, FiUsers, FiMapPin, FiClock, FiEye, FiDownload, FiDollarSign } from "react-icons/fi";
+"use client";
+
+import { useMemo, useState } from "react";
+import {
+  FiFileText,
+  FiCalendar,
+  FiUsers,
+  FiMapPin,
+  FiClock,
+  FiEye,
+  FiDownload,
+  FiDollarSign,
+} from "react-icons/fi";
+import { useRouter } from "next/navigation";
+
+type ReportCard = {
+  id: number;
+  title: string;
+  fileName: string;
+  description: string;
+  org: string;
+  price: string;
+  date: string;
+  duration: string;
+  contact: string;
+  attendees: string;
+  location: string;
+  tags: string[];
+  status: "completed" | "draft" | string;
+  size: string;
+  uploaded: string;
+};
+
+const CATEGORIES = [
+  "Leadership",
+  "Technical",
+  "Safety",
+  "Compliance",
+  "Sales",
+  "Communication",
+  "Management",
+  "HR",
+  "Onboarding",
+  "Assessment",
+];
+
+const getFileType = (fileName: string) => {
+  const ext = fileName.split(".").pop()?.toLowerCase();
+  switch (ext) {
+    case "pdf":
+      return "PDF";
+    case "docx":
+    case "doc":
+      return "Word";
+    case "ppt":
+    case "pptx":
+      return "PowerPoint";
+    case "xls":
+    case "xlsx":
+      return "Excel";
+    case "jpg":
+    case "jpeg":
+    case "png":
+      return "Image";
+    default:
+      return "Other";
+  }
+};
+
+const statusColor = (s: string) =>
+  s === "completed" ? "bg-green-50 text-green-700" : "bg-slate-50 text-slate-600";
+
+const categoryColor = (tag: string) => {
+  const t = tag.toLowerCase();
+  if (t === "leadership") return "bg-purple-100 text-purple-700";
+  if (t === "safety") return "bg-red-100 text-red-700";
+  if (t === "technical") return "bg-blue-100 text-blue-700";
+  if (t === "sales") return "bg-green-100 text-green-700";
+  if (t === "communication") return "bg-pink-100 text-pink-700";
+  return "bg-slate-100 text-slate-700";
+};
 
 export default function RepositoryPage() {
-  const dummyCards = Array.from({ length: 9 }).map((_, i) => ({
+  const router = useRouter();
+
+  const dummyCards: ReportCard[] = Array.from({ length: 9 }).map((_, i) => ({
     id: i + 1,
     title: [
       "Corporate Leadership Excellence Program",
@@ -28,43 +109,115 @@ export default function RepositoryPage() {
     ][i % 9],
     description:
       "Comprehensive training covering key topics, outcomes and practical exercises designed for workplace improvement and skill development.",
-    org: ["First Bank Nigeria", "Dangote Cement", "GTBank", "GlaxoSmithKline Nigeria", "MTN Nigeria", "Safety Institute", "Tech Lab", "First Bank Nigeria", "Training Center"][i % 9],
-    price: ["₦2,500,000", "₦1,800,000", "₦1,200,000", "₦950,000", "₦3,200,000", "", "", "", "" ][i % 9],
-    date: ["Nov 15, 2024", "Oct 20, 2024", "Dec 1, 2024", "Nov 28, 2024", "Nov 10, 2024", "Oct 20, 2024", "Dec 1, 2024", "Nov 15, 2024", "Nov 10, 2024"][i % 9],
-    duration: ["3 days", "3 days", "5 days", "2 days", "3 days", "", "", "", "" ][i % 9],
-    contact: ["Dr. Sarah Adebayo", "Engr. Michael Okafor", "Adaora Nwankwo", "Jennifer Okoli", "Prof. Kemi Rotimi", "Mike Rodriguez", "Alex Chen", "Sarah Johnson", "Emily Davis"][i % 9],
-    attendees: ["25 senior managers", "120 factory workers and supervisors", "30 marketing executives", "18 senior sales representatives", "15 C-level executives", "120 employees", "30 developers", "25 managers", "40 staff members"][i % 9],
-    location: ["First Bank Training Center, Lagos", "Dangote Cement Plant, Ibese", "GTBank Academy, Victoria Island", "GSK Office, Ikeja", "MTN Headquarters, Ikoyi", "Main Auditorium", "Tech Lab", "Main Conference Room", "Training Center"][i % 9],
+    org: [
+      "First Bank Nigeria",
+      "Dangote Cement",
+      "GTBank",
+      "GlaxoSmithKline Nigeria",
+      "MTN Nigeria",
+      "Safety Institute",
+      "Tech Lab",
+      "First Bank Nigeria",
+      "Training Center",
+    ][i % 9],
+    price: ["₦2,500,000", "₦1,800,000", "₦1,200,000", "₦950,000", "₦3,200,000", "", "", "", ""][
+      i % 9
+    ],
+    date: [
+      "Nov 15, 2024",
+      "Oct 20, 2024",
+      "Dec 1, 2024",
+      "Nov 28, 2024",
+      "Nov 10, 2024",
+      "Oct 20, 2024",
+      "Dec 1, 2024",
+      "Nov 15, 2024",
+      "Nov 10, 2024",
+    ][i % 9],
+    duration: ["3 days", "3 days", "5 days", "2 days", "3 days", "", "", "", ""][i % 9],
+    contact: [
+      "Dr. Sarah Adebayo",
+      "Engr. Michael Okafor",
+      "Adaora Nwankwo",
+      "Jennifer Okoli",
+      "Prof. Kemi Rotimi",
+      "Mike Rodriguez",
+      "Alex Chen",
+      "Sarah Johnson",
+      "Emily Davis",
+    ][i % 9],
+    attendees: [
+      "25 senior managers",
+      "120 factory workers and supervisors",
+      "30 marketing executives",
+      "18 senior sales representatives",
+      "15 C-level executives",
+      "120 employees",
+      "30 developers",
+      "25 managers",
+      "40 staff members",
+    ][i % 9],
+    location: [
+      "First Bank Training Center, Lagos",
+      "Dangote Cement Plant, Ibese",
+      "GTBank Academy, Victoria Island",
+      "GSK Office, Ikeja",
+      "MTN Headquarters, Ikoyi",
+      "Main Auditorium",
+      "Tech Lab",
+      "Main Conference Room",
+      "Training Center",
+    ][i % 9],
     tags: [
-      ["leadership", "management", "corporate"],
-      ["safety", "compliance", "manufacturing"],
-      ["digital marketing", "social media", "SEO"],
-      ["sales", "pharmaceutical"],
-      ["communication", "presentation"],
-      ["safety", "annual", "protocols"],
-      ["technical", "assessment", "skills"],
-      ["leadership", "management", "quarterly"],
-      ["communication", "presentation", "interpersonal"],
+      ["Leadership", "Management", "Corporate"],
+      ["Safety", "Compliance", "Manufacturing"],
+      ["Digital Marketing", "Technical", "SEO"],
+      ["Sales", "Pharmaceutical"],
+      ["Communication", "Presentation"],
+      ["Safety", "Annual", "Protocols"],
+      ["Technical", "Assessment", "Skills"],
+      ["Leadership", "Management", "Quarterly"],
+      ["Communication", "Presentation", "Interpersonal"],
     ][i % 9],
     status: i % 2 === 0 ? "completed" : "draft",
-    size: ["1.95 MB", "1.46 MB", "500 KB", "1.71 MB", "875 KB", "1.46 MB", "500 KB", "1.95 MB", "875 KB"][i % 9],
+    size: ["1.95 MB", "1.46 MB", "500 KB", "1.71 MB", "875 KB", "1.46 MB", "500 KB", "1.95 MB", "875 KB"][
+      i % 9
+    ],
     uploaded: "Uploaded Sep 20, 2025",
   }));
 
-  const statusColor = (s: string) => {
-    if (s === "completed") return "bg-green-50 text-green-700";
-    if (s === "draft") return "bg-slate-50 text-slate-600";
-    return "bg-slate-50 text-slate-600";
-  };
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All Categories");
+  const [type, setType] = useState("All Types");
+  const [sort, setSort] = useState("Newest first");
 
-  const categoryColor = (tag: string) => {
-    if (tag === "leadership") return "bg-purple-100 text-purple-700";
-    if (tag === "safety") return "bg-red-100 text-red-700";
-    if (tag === "technical") return "bg-blue-100 text-blue-700";
-    if (tag === "sales") return "bg-green-100 text-green-700";
-    if (tag === "communication") return "bg-pink-100 text-pink-700";
-    return "bg-slate-100 text-slate-700";
-  };
+  const filteredCards = useMemo(() => {
+    const cat = category;
+    return dummyCards
+      .filter((card) => {
+        const q = search.trim().toLowerCase();
+        const titleMatch = card.title.toLowerCase().includes(q);
+        const orgMatch = card.org.toLowerCase().includes(q);
+        const tagsMatch = card.tags.some((t) => t.toLowerCase().includes(q));
+        const searchMatch = q === "" ? true : titleMatch || orgMatch || tagsMatch;
+
+        const categoryMatch =
+          cat === "All Categories" ||
+          (cat === "Others"
+            ? !card.tags.some((t) => CATEGORIES.map((c) => c.toLowerCase()).includes(t.toLowerCase()))
+            : card.tags.some((t) => t.toLowerCase() === (cat || "").toLowerCase()));
+
+        const fileType = getFileType(card.fileName);
+        const typeMatch = type === "All Types" || fileType.toLowerCase() === type.toLowerCase();
+
+        return searchMatch && categoryMatch && typeMatch;
+      })
+      .sort((a, b) => {
+        const da = new Date(a.date).getTime();
+        const db = new Date(b.date).getTime();
+        return sort === "Newest first" ? db - da : da - db;
+      });
+  }, [dummyCards, search, category, type, sort]);
 
   return (
     <div className="repository-page p-8 bg-gray-50 min-h-screen">
@@ -75,28 +228,60 @@ export default function RepositoryPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="h-10 inline-flex items-center gap-2 rounded-md bg-sky-600 text-white px-3 font-medium hover:bg-sky-700 transition">
+          <button
+            onClick={() => router.push("/upload")}
+            className="h-10 inline-flex items-center gap-2 rounded-md bg-sky-600 text-white px-3 font-medium hover:bg-sky-700 transition"
+          >
             + Upload Report
           </button>
-          <Link href="#" className="text-sm text-slate-500 hover:underline">Browse</Link>
         </div>
       </header>
 
       <section className="controls mb-6 flex flex-col md:flex-row gap-3">
-        <input placeholder="Search reports by title, description, or tags" className="flex-1 h-10 rounded-md border border-slate-200 px-3" />
-        <select className="h-10 rounded-md border border-slate-200 px-2">
+        <input
+          placeholder="Search reports by title, description, or tags"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 h-10 rounded-md border border-gray-500 px-3 text-black"
+        />
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="h-10 rounded-md border border-gray-500 px-2 text-black"
+        >
           <option>All Categories</option>
+          {CATEGORIES.map((c) => (
+            <option key={c}>{c}</option>
+          ))}
+          <option>Others</option>
         </select>
-        <select className="h-10 rounded-md border border-slate-200 px-2">
+
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          className="h-10 rounded-md border border-gray-500 px-2 text-black"
+        >
           <option>All Types</option>
+          <option>PDF</option>
+          <option>PowerPoint</option>
+          <option>Word</option>
+          <option>Excel</option>
+          <option>Image</option>
         </select>
-        <select className="h-10 rounded-md border border-slate-200 px-2">
+
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="h-10 rounded-md border border-gray-500 px-2 text-black"
+        >
           <option>Newest first</option>
+          <option>Oldest first</option>
         </select>
       </section>
 
       <section className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {dummyCards.map((c) => (
+        {filteredCards.map((c) => (
           <article key={c.id} className="card rounded-lg border border-slate-100 bg-white p-5 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
@@ -119,10 +304,12 @@ export default function RepositoryPage() {
                   <p className="text-sm text-slate-500 mt-3 line-clamp-3">{c.description}</p>
 
                   <div className="mt-4 space-y-2 text-sm text-slate-600">
-                    <div className="flex items-center gap-3">
-                      <FiDollarSign className="text-slate-400" />
-                      <span className="text-slate-700 font-medium">{c.price || ""}</span>
-                    </div>
+                    {c.price && (
+                      <div className="flex items-center gap-3">
+                        <FiDollarSign className="text-slate-400" />
+                        <span className="text-slate-700 font-medium">{c.price}</span>
+                      </div>
+                    )}
 
                     <div className="flex items-center gap-3">
                       <FiCalendar className="text-slate-400" />
@@ -165,9 +352,15 @@ export default function RepositoryPage() {
             </div>
           </article>
         ))}
+
+        {filteredCards.length === 0 && (
+          <div className="text-center text-slate-600 col-span-full py-12">No reports match your filters.</div>
+        )}
       </section>
 
-      <footer className="mt-8 text-center text-sm text-slate-500">Showing 10 of 10 reports</footer>
+      <footer className="mt-8 text-center text-sm text-slate-500">
+        Showing {filteredCards.length} of {dummyCards.length} reports
+      </footer>
     </div>
   );
 }
