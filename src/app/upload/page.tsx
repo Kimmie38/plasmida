@@ -53,74 +53,48 @@ export default function UploadPage() {
         </header>
 
         {/* Upload Area */}
-        <section className="upload-dropzone mb-6">
-          <div className="border-dashed border-2 border-slate-200 rounded-lg bg-white p-12 text-center transition hover:border-blue-400">
-            {!file ? (
-              <>
-                <div className="mx-auto inline-flex items-center justify-center h-16 w-16 rounded-full bg-slate-50 text-slate-600 mb-4">
-                  <FiUpload className="text-2xl" />
-                </div>
-                <h2 className="text-lg font-semibold text-black">Upload Training Report</h2>
-                <p className="text-sm text-slate-500 mt-2">
-                  Drag and drop your training document here, or click to browse files
-                </p>
+        {!file && (
+          <section className="upload-dropzone mb-6">
+            <div className="border-dashed border-2 border-slate-200 rounded-lg bg-white p-12 text-center transition hover:border-blue-400">
+              <div className="mx-auto inline-flex items-center justify-center h-16 w-16 rounded-full bg-slate-50 text-slate-600 mb-4">
+                <FiUpload className="text-2xl" />
+              </div>
+              <h2 className="text-lg font-semibold text-black">Upload Training Report</h2>
+              <p className="text-sm text-slate-500 mt-2">
+                Drag and drop your training document here, or click to browse files
+              </p>
 
-                {/* ✅ Fixed Choose File Button */}
-                <div className="mt-6">
-                  <input
-                    id="fileInput"
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      document.getElementById("fileInput")?.click()
-                    }
-                    className="h-10 px-4 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
-                  >
-                    Choose File
-                  </button>
-                </div>
-
-                <p className="text-xs text-slate-400 mt-3">
-                  Supported formats: PDF, Word, Excel, PowerPoint, Images
-                  <br />
-                  Maximum file size: 50MB
-                </p>
-
-                {error && (
-                  <div className="mt-4 flex items-center justify-center text-red-600 text-sm gap-2">
-                    <FiAlertCircle />
-                    <span>{error}</span>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex items-center gap-3 text-slate-700">
-                  <FiFile className="text-2xl text-blue-500" />
-                  <div>
-                    <p className="font-medium">{file.name}</p>
-                    <p className="text-xs text-slate-500">
-                      {(file.size / (1024 * 1024)).toFixed(2)} MB
-                    </p>
-                  </div>
-                </div>
-                <p className="text-sm text-green-600 font-medium">
-                  ✅ File uploaded successfully
-                </p>
+              <div className="mt-6">
+                <input
+                  id="fileInput"
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
                 <button
-                  onClick={resetFile}
-                  className="text-sm text-blue-600 hover:underline"
+                  type="button"
+                  onClick={() => document.getElementById("fileInput")?.click()}
+                  className="h-10 px-4 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
                 >
-                  Upload another file
+                  Choose File
                 </button>
               </div>
-            )}
-          </div>
-        </section>
+
+              <p className="text-xs text-slate-400 mt-3">
+                Supported formats: PDF, Word, Excel, PowerPoint, Images
+                <br />
+                Maximum file size: 50MB
+              </p>
+
+              {error && (
+                <div className="mt-4 flex items-center justify-center text-red-600 text-sm gap-2">
+                  <FiAlertCircle />
+                  <span>{error}</span>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Tips Section */}
         {!file && (
