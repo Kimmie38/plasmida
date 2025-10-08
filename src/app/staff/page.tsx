@@ -1,7 +1,11 @@
+"use client";
+
+import React, { useState } from "react";
 import { FiUser, FiBriefcase } from "react-icons/fi";
+import AddStaffModal from "@/components/AddStaffModal";
 
 export default function StaffPage() {
-  const staff = [
+  const [staff, setStaff] = useState([
     { name: 'Adebayo Johnson', email: 'adebayo.johnson@company.com', dept: 'Information Technology', unit: 'Software Development', status: 'active', value: '₦650,000', date: 'Jan 15, 2024' },
     { name: 'Fatima Abubakar', email: 'fatima.abubakar@company.com', dept: 'Human Resources', unit: 'Talent Acquisition', status: 'active', value: '₦650,000', date: 'Feb 1, 2024' },
     { name: 'Chinedu Okafor', email: 'chinedu.okafor@company.com', dept: 'Sales & Marketing', unit: 'Digital Marketing', status: 'active', value: '₦920,000', date: 'Mar 1, 2024' },
@@ -10,7 +14,26 @@ export default function StaffPage() {
     { name: 'Kemi Adeyemi', email: 'kemi.adeyemi@company.com', dept: 'Customer Service', unit: 'Customer Support', status: 'prospect', value: '₦480,000', date: 'Jun 1, 2024' },
     { name: 'Ibrahim Suleiman', email: 'ibrahim.suleiman@company.com', dept: 'Engineering', unit: 'Product Development', status: 'active', value: '₦1,050,000', date: 'Jul 15, 2024' },
     { name: 'Grace Okoro', email: 'grace.okoro@company.com', dept: 'Legal & Compliance', unit: 'Regulatory Affairs', status: 'active', value: '₦680,000', date: 'Aug 1, 2024' },
-  ];
+  ]);
+
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpen = () => setShowModal(true);
+  const handleClose = () => setShowModal(false);
+
+  const handleSave = (data: any) => {
+    const newStaff = {
+      name: data.staffName,
+      email: data.email || `${data.staffName.replace(/\s+/g, '.').toLowerCase()}@example.com`,
+      dept: data.department,
+      unit: data.unit || "",
+      status: (data.status || "prospect").toLowerCase(),
+      value: data.contractValue || "",
+      date: data.contractStart || new Date().toLocaleDateString(),
+    };
+
+    setStaff((s) => [newStaff, ...s]);
+  };
 
   return (
     <div className="staff-page p-8 bg-gray-50 min-h-screen">
@@ -20,7 +43,7 @@ export default function StaffPage() {
           <p className="text-sm text-gray-700 mt-1">Manage all staff members for the agency</p>
         </div>
 
-        <button className="inline-flex items-center gap-2 h-10 px-3 rounded bg-sky-600 text-white hover:bg-sky-700 transition">
+        <button onClick={handleOpen} className="inline-flex items-center gap-2 h-10 px-3 rounded bg-sky-600 text-white hover:bg-sky-700 transition">
           + Add New Staff
         </button>
       </header>
@@ -28,12 +51,12 @@ export default function StaffPage() {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
           <div className="text-sm text-gray-700">Total Staff</div>
-          <div className="text-xl font-semibold text-black mt-2">8</div>
+          <div className="text-xl font-semibold text-black mt-2">{staff.length}</div>
         </div>
 
         <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
           <div className="text-sm text-gray-700">Active Staff</div>
-          <div className="text-xl font-semibold text-black mt-2">7</div>
+          <div className="text-xl font-semibold text-black mt-2">{staff.filter(s => s.status === 'active').length}</div>
         </div>
 
         <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
@@ -83,6 +106,8 @@ export default function StaffPage() {
           </tbody>
         </table>
       </section>
+
+      {showModal && <AddStaffModal mode="modal" onClose={handleClose} onSave={(d) => { handleSave(d); handleClose(); }} />}
     </div>
   );
 }
