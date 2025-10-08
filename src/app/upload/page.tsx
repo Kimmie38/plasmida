@@ -152,7 +152,7 @@ export default function UploadPage() {
         {/* Show form when file uploaded */}
         {file && (
           <div className="mt-8">
-            <AddListingModal uploadedFile={file} />
+            <AddListingModal uploadedFile={file} mode="inline" onClose={resetFile} />
           </div>
         )}
       </div>
