@@ -1,16 +1,26 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { FiUpload, FiX } from "react-icons/fi";
 
 interface AddListingModalProps {
   onClose: () => void;
+  uploadedFile?: File | null;
+  mode?: "modal" | "inline";
 }
 
-export default function AddListingModal({ onClose }: AddListingModalProps) {
+export default function AddListingModal({ onClose, uploadedFile = null, mode = "modal" }: AddListingModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formVisible, setFormVisible] = useState(false);
+
+  useEffect(() => {
+    if (uploadedFile) {
+      setFile(uploadedFile);
+      setFormVisible(true);
+      setError(null);
+    }
+  }, [uploadedFile]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -66,14 +76,16 @@ export default function AddListingModal({ onClose }: AddListingModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
-        >
-          <FiX size={20} />
-        </button>
+    <div className={mode === "modal" ? "fixed inset-0 bg-black/40 flex items-center justify-center z-50" : ""}>
+      <div className={mode === "modal" ? "bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 relative" : "bg-white w-full rounded-xl shadow-sm p-6 border border-slate-100 relative"}>
+        {mode === "modal" && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+          >
+            <FiX size={20} />
+          </button>
+        )}
 
         {/* Step 1: File Upload */}
         {!formVisible && (
@@ -90,12 +102,12 @@ export default function AddListingModal({ onClose }: AddListingModalProps) {
             <div className="mt-5">
               <input
                 type="file"
-                id="fileInput"
+                id="addListingFileInput"
                 className="hidden"
                 onChange={handleFileChange}
                 accept=".pdf,.docx,.xlsx,.pptx,.jpg,.jpeg,.png"
               />
-              <label htmlFor="fileInput">
+              <label htmlFor="addListingFileInput">
                 <button
                   type="button"
                   className="h-10 px-4 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition"
