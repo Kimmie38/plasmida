@@ -93,7 +93,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
         {mode === "modal" && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+            className="absolute top-4 right-4 text-black hover:text-slate-600"
           >
             <FiX size={20} />
           </button>
@@ -122,7 +122,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
               <label htmlFor="addListingFileInput">
                 <button
                   type="button"
-                  className="h-10 px-4 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition"
+                  className="h-10 px-4 rounded-md bg-sky-600 text-black hover:bg-sky-700 transition"
                 >
                   Choose File
                 </button>
@@ -168,7 +168,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   value={formData.projectName}
                   onChange={handleInputChange}
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full rounded-md border text-gray-600 border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -178,7 +178,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   name="clientCompany"
                   value={formData.clientCompany}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full rounded-md border  border-slate-300 px-3 text-gray-600 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -189,7 +189,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   value={formData.reportTitle}
                   onChange={handleInputChange}
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full rounded-md border text-gray-600 border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -200,7 +200,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   value={formData.trainingCategory}
                   onChange={handleInputChange}
                   required
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full rounded-md border text-gray-600 border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 >
                   <option value="">Select category</option>
                   <option>Leadership</option>
@@ -224,7 +224,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -235,18 +235,18 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   value={formData.projectCost}
                   onChange={handleInputChange}
                   type="number"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Duration (Days)</label>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Duration (Days)</label>
                 <input
                   name="durationDays"
                   value={formData.durationDays}
                   onChange={handleInputChange}
                   type="number"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -256,7 +256,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   name="projectStatus"
                   value={formData.projectStatus}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 >
                   <option>Completed</option>
                   <option>Draft</option>
