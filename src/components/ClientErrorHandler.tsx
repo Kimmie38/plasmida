@@ -10,6 +10,7 @@ export default function ClientErrorHandler() {
         // Ignore FullStory network failures (external script). Don't block navigation.
         if (/fullstory|fs\.js|Failed to fetch/i.test(msg)) {
           console.warn("Ignored external script error:", msg);
+          try { event.preventDefault?.(); } catch (e) {}
           return;
         }
 
@@ -38,6 +39,7 @@ export default function ClientErrorHandler() {
         }
         if (/fullstory|fs\.js|Failed to fetch/i.test(msg)) {
           console.warn("Ignored external fetch rejection:", msg);
+          try { ev.preventDefault?.(); } catch (e) {}
         }
       } catch (err) {
         // swallow
