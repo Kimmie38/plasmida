@@ -1,22 +1,44 @@
 "use client";
 
-import { useState, ChangeEvent, FormEvent } from "react";
-import { FiUpload, FiX } from "react-icons/fi";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { FiUpload, FiX, FiSave } from "react-icons/fi";
 
 interface AddListingModalProps {
   onClose: () => void;
+  uploadedFile?: File | null;
+  mode?: "modal" | "inline";
 }
 
-export default function AddListingModal({ onClose }: AddListingModalProps) {
+export default function AddListingModal({ onClose, uploadedFile = null, mode = "modal" }: AddListingModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formVisible, setFormVisible] = useState(false);
 
+  useEffect(() => {
+    if (uploadedFile) {
+      setFile(uploadedFile);
+      setFormVisible(true);
+      setError(null);
+    }
+  }, [uploadedFile]);
+
   const [formData, setFormData] = useState({
-    title: "",
-    organization: "",
-    category: "",
-    type: "",
+    projectName: "",
+    clientCompany: "",
+    reportTitle: "",
+    trainingCategory: "",
+    description: "",
+    projectCost: "",
+    durationDays: "",
+    projectStatus: "Completed",
+    instructor: "",
+    participants: "",
+    startDate: "",
+    completionDate: "",
+    location: "",
+    tags: "",
+    additionalNotes: "",
+    fileType: "",
   });
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -54,7 +76,7 @@ export default function AddListingModal({ onClose }: AddListingModalProps) {
     setFormVisible(true);
   };
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -66,14 +88,16 @@ export default function AddListingModal({ onClose }: AddListingModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
-        >
-          <FiX size={20} />
-        </button>
+    <div className={mode === "modal" ? "fixed inset-0 bg-black/40 flex items-center justify-center z-50" : ""}>
+      <div className={mode === "modal" ? "bg-white w-full max-w-2xl rounded-xl shadow-lg p-6 relative" : "bg-white w-full rounded-xl shadow-sm p-6 border border-slate-100 relative"}>
+        {mode === "modal" && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+          >
+            <FiX size={20} />
+          </button>
+        )}
 
         {/* Step 1: File Upload */}
         {!formVisible && (
@@ -90,12 +114,12 @@ export default function AddListingModal({ onClose }: AddListingModalProps) {
             <div className="mt-5">
               <input
                 type="file"
-                id="fileInput"
+                id="addListingFileInput"
                 className="hidden"
                 onChange={handleFileChange}
                 accept=".pdf,.docx,.xlsx,.pptx,.jpg,.jpeg,.png"
               />
-              <label htmlFor="fileInput">
+              <label htmlFor="addListingFileInput">
                 <button
                   type="button"
                   className="h-10 px-4 rounded-md bg-sky-600 text-white hover:bg-sky-700 transition"
@@ -115,45 +139,65 @@ export default function AddListingModal({ onClose }: AddListingModalProps) {
 
         {/* Step 2: Form */}
         {formVisible && (
-          <form onSubmit={handleSubmit} className="mt-2 space-y-4">
-            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-              <p className="text-sm font-medium text-slate-700">Selected File:</p>
-              <div className="mt-2 text-slate-600 flex items-center justify-between text-sm">
-                <span>{file?.name}</span>
-                <span>{(file!.size / (1024 * 1024)).toFixed(2)} MB</span>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <header>
+              <h2 className="text-xl font-semibold text-slate-800">Add Training Project Details</h2>
+              <p className="text-sm text-slate-500 mt-1">Fill in the information about your training project and report</p>
+            </header>
+
+            <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-md bg-white flex items-center justify-center text-sky-600 border border-slate-200">
+                    <FiUpload />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-slate-800">{file?.name}</div>
+                    <div className="text-xs text-slate-500">{(file!.size / (1024 * 1024)).toFixed(2)} MB</div>
+                  </div>
+                </div>
+                <div className="text-sm text-green-600 font-medium">✅ File uploaded successfully</div>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                required
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Organization</label>
-              <input
-                type="text"
-                name="organization"
-                value={formData.organization}
-                onChange={handleInputChange}
-                required
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Training Project Name *</label>
+                <input
+                  name="projectName"
+                  value={formData.projectName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Client Company</label>
+                <input
+                  name="clientCompany"
+                  value={formData.clientCompany}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Report/Document Title *</label>
+                <input
+                  name="reportTitle"
+                  value={formData.reportTitle}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Training Category *</label>
                 <select
-                  name="category"
-                  value={formData.category}
+                  name="trainingCategory"
+                  value={formData.trainingCategory}
                   onChange={handleInputChange}
                   required
                   className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
@@ -173,22 +217,125 @@ export default function AddListingModal({ onClose }: AddListingModalProps) {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Type</label>
-                <select
-                  name="type"
-                  value={formData.type}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Project Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
                   onChange={handleInputChange}
-                  required
+                  rows={4}
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Project Cost (₦)</label>
+                <input
+                  name="projectCost"
+                  value={formData.projectCost}
+                  onChange={handleInputChange}
+                  type="number"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Duration (Days)</label>
+                <input
+                  name="durationDays"
+                  value={formData.durationDays}
+                  onChange={handleInputChange}
+                  type="number"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Project Status</label>
+                <select
+                  name="projectStatus"
+                  value={formData.projectStatus}
+                  onChange={handleInputChange}
                   className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 >
-                  <option value="">Select type</option>
-                  <option>PDF</option>
-                  <option>Word</option>
-                  <option>Excel</option>
-                  <option>PowerPoint</option>
-                  <option>Image</option>
+                  <option>Completed</option>
+                  <option>Draft</option>
+                  <option>In Progress</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Instructor/Trainer</label>
+                <input
+                  name="instructor"
+                  value={formData.instructor}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Participants</label>
+                <input
+                  name="participants"
+                  value={formData.participants}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Training Start Date</label>
+                <input
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleInputChange}
+                  type="date"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Project Completion Date</label>
+                <input
+                  name="completionDate"
+                  value={formData.completionDate}
+                  onChange={handleInputChange}
+                  type="date"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Training Location</label>
+                <input
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Tags</label>
+                <input
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleInputChange}
+                  placeholder="Add tags separated by commas (e.g., corporate, team building, quarterly)"
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-1">Additional Notes</label>
+                <textarea
+                  name="additionalNotes"
+                  value={formData.additionalNotes}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
               </div>
             </div>
 
@@ -196,15 +343,17 @@ export default function AddListingModal({ onClose }: AddListingModalProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-100"
+                className="px-4 py-2 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-100 flex items-center gap-2"
               >
-                Cancel
+                <span className="text-sm">Cancel</span>
               </button>
+
               <button
                 type="submit"
-                className="px-4 py-2 rounded-md bg-sky-600 text-white font-medium hover:bg-sky-700 transition"
+                className="px-4 py-2 rounded-md bg-sky-600 text-white font-medium hover:bg-sky-700 transition flex items-center gap-2"
               >
-                Save Report
+                <FiSave />
+                <span>Save Project</span>
               </button>
             </div>
           </form>
