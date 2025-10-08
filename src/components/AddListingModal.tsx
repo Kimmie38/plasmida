@@ -270,7 +270,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   name="instructor"
                   value={formData.instructor}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -280,7 +280,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   name="participants"
                   value={formData.participants}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -291,7 +291,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   value={formData.startDate}
                   onChange={handleInputChange}
                   type="date"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -302,7 +302,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   value={formData.completionDate}
                   onChange={handleInputChange}
                   type="date"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -312,7 +312,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -323,7 +323,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   value={formData.tags}
                   onChange={handleInputChange}
                   placeholder="Add tags separated by commas (e.g., corporate, team building, quarterly)"
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
 
@@ -334,7 +334,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                   value={formData.additionalNotes}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 />
               </div>
             </div>

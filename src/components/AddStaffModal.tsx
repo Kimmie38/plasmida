@@ -72,7 +72,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 value={formData.staffName}
                 onChange={handleChange}
                 required
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
@@ -82,7 +82,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 value={formData.department}
                 onChange={handleChange}
                 required
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -93,7 +93,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
@@ -103,7 +103,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -113,7 +113,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 name="unit"
                 value={formData.unit}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
@@ -122,7 +122,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               >
                 <option>Prospect</option>
                 <option>Active</option>
@@ -139,7 +139,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 name="contractValue"
                 value={formData.contractValue}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
 
@@ -150,7 +150,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 name="contractStartDate"
                 value={formData.contractStartDate}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
             <div>
@@ -160,7 +160,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 name="contractEndDate"
                 value={formData.contractEndDate}
                 onChange={handleChange}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
           </div>
