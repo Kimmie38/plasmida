@@ -18,7 +18,7 @@ export default function HomeLogin() {
       <div aria-hidden className="pointer-events-none absolute -left-36 top-6 h-72 w-72 rounded-full bg-sky-100/60 blur-3xl" />
       <div aria-hidden className="pointer-events-none absolute -right-36 bottom-6 h-80 w-80 rounded-full bg-sky-100/40 blur-3xl" />
 
-      <section className="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-xl p-8 text-center">
+      <section className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-sm bg-white rounded-3xl shadow-xl p-6 sm:p-8 text-center mx-4">
         <div className="mx-auto mb-4 w-fit rounded-full bg-white p-2 ring-1 ring-slate-200 shadow-sm">
           <Image src="/images/logo.png" alt="PLASMIDA crest" width={84} height={84} className="rounded-full" priority />
         </div>
