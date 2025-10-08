@@ -1,6 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import { FiUser, FiBriefcase } from "react-icons/fi";
+import AddStaffModal from "@/components/AddStaffModal";
 
 export default function StaffPage() {
+  const [showAddStaff, setShowAddStaff] = useState(false);
+
   const staff = [
     { name: 'Adebayo Johnson', email: 'adebayo.johnson@company.com', dept: 'Information Technology', unit: 'Software Development', status: 'active', value: '₦650,000', date: 'Jan 15, 2024' },
     { name: 'Fatima Abubakar', email: 'fatima.abubakar@company.com', dept: 'Human Resources', unit: 'Talent Acquisition', status: 'active', value: '₦650,000', date: 'Feb 1, 2024' },
@@ -20,7 +26,10 @@ export default function StaffPage() {
           <p className="text-sm text-gray-700 mt-1">Manage all staff members for the agency</p>
         </div>
 
-        <button className="inline-flex items-center gap-2 h-10 px-3 rounded bg-sky-600 text-white hover:bg-sky-700 transition">
+        <button
+          onClick={() => setShowAddStaff(true)}
+          className="inline-flex items-center gap-2 h-10 px-3 rounded bg-sky-600 text-white hover:bg-sky-700 transition"
+        >
           + Add New Staff
         </button>
       </header>
@@ -83,6 +92,10 @@ export default function StaffPage() {
           </tbody>
         </table>
       </section>
+
+      {showAddStaff && (
+        <AddStaffModal onClose={() => setShowAddStaff(false)} />
+      )}
     </div>
   );
 }
