@@ -13,7 +13,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     <div className="app-root min-h-screen flex">
       <ClientErrorHandler />
       {showSidebar && <Sidebar />}
-      <main className={`flex-1 ${showSidebar ? 'ml-72' : ''}`}>{children}</main>
+      <main className={`flex-1 ${showSidebar ? 'md:ml-72' : ''}`}>{children}</main>
     </div>
   );
 }
