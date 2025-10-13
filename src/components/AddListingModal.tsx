@@ -150,7 +150,14 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
 
         const display = serverMsg || `Upload failed (${res.status}).`;
         setSubmitError(display);
-        console.error('Upload failed', { status: res.status, body: data });
+        const debug = {
+          status: res.status,
+          statusText: res.statusText,
+          headers: Object.fromEntries(res.headers ? Array.from(res.headers.entries()) : []),
+          body: data,
+        };
+        setUploadDebug(debug);
+        console.error('Upload failed', debug);
         setSaving(false);
         return;
       }
