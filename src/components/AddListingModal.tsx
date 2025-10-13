@@ -125,18 +125,26 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
         body: fd,
       });
 
-      const data = await res.json().catch(() => ({}));
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch (e) {
+        const text = await res.text().catch(() => null);
+        data = text || null;
+      }
 
       if (!res.ok) {
-        setSubmitError(data?.message || "Upload failed. Please try again.");
+        const serverMsg = data && typeof data === 'object' ? data.message || JSON.stringify(data) : data;
+        setSubmitError(serverMsg || `Upload failed (${res.status}).`);
+        console.error('Upload failed', { status: res.status, body: data });
         setSaving(false);
         return;
       }
 
       // success
       onClose();
-      // optional: navigate or show toast
       alert("✅ Report uploaded successfully.");
+      console.log('Upload success', data);
     } catch (err) {
       console.error("Upload error:", err);
       setSubmitError("Network or server error. Please try again.");
