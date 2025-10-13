@@ -134,8 +134,21 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
       }
 
       if (!res.ok) {
-        const serverMsg = data && typeof data === 'object' ? data.message || JSON.stringify(data) : data;
-        setSubmitError(serverMsg || `Upload failed (${res.status}).`);
+        let serverMsg: string | null = null;
+        if (data) {
+          if (typeof data === 'object') {
+            try {
+              serverMsg = data.message || JSON.stringify(data);
+            } catch (e) {
+              serverMsg = String(data);
+            }
+          } else {
+            serverMsg = String(data);
+          }
+        }
+
+        const display = serverMsg || `Upload failed (${res.status}).`;
+        setSubmitError(display);
         console.error('Upload failed', { status: res.status, body: data });
         setSaving(false);
         return;
