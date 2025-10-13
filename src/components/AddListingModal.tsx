@@ -169,6 +169,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
     } catch (err) {
       console.error("Upload error:", err);
       setSubmitError("Network or server error. Please try again.");
+      setUploadDebug({ error: String(err) });
     } finally {
       setSaving(false);
     }
