@@ -15,6 +15,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
   const [formVisible, setFormVisible] = useState(false);
   const [saving, setSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [uploadDebug, setUploadDebug] = useState<any | null>(null);
 
   useEffect(() => {
     if (uploadedFile) {
