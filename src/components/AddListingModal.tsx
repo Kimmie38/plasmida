@@ -431,6 +431,13 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
               <div className="col-span-full text-red-500 text-sm mb-2">{submitError}</div>
             )}
 
+            {uploadDebug && (
+              <div className="col-span-full bg-slate-100 rounded-md p-3 text-xs text-slate-700 mb-2">
+                <div className="font-medium mb-1">Debug info (paste to support):</div>
+                <pre className="whitespace-pre-wrap">{JSON.stringify(uploadDebug, null, 2)}</pre>
+              </div>
+            )}
+
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
