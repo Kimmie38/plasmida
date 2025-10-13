@@ -13,6 +13,8 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formVisible, setFormVisible] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (uploadedFile) {
@@ -80,11 +82,67 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("Submitted data:", { ...formData, file });
-    alert("Report uploaded successfully!");
-    onClose();
+    setSubmitError(null);
+
+    if (!file) {
+      setSubmitError("No file selected.");
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+      const fd = new FormData();
+
+      fd.append("projectName", formData.projectName);
+      fd.append("clientCompany", formData.clientCompany);
+      fd.append("reportTitle", formData.reportTitle);
+      fd.append("trainingCategory", formData.trainingCategory);
+      fd.append("projectDescription", formData.description);
+      fd.append("projectCost", formData.projectCost);
+      fd.append("duration", formData.durationDays);
+      fd.append("projectStatus", formData.projectStatus);
+      fd.append("instructor", formData.instructor);
+      fd.append("participants", formData.participants);
+      fd.append("trainingStartDate", formData.startDate);
+      fd.append("projectCompletionDate", formData.completionDate);
+      fd.append("trainingLocation", formData.location);
+
+      const tagsArr = formData.tags ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean) : [];
+      fd.append("tags", JSON.stringify(tagsArr));
+
+      fd.append("additionalNotes", formData.additionalNotes);
+      fd.append("file", file, file.name);
+
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+      const res = await fetch(`${API_URL}/api/v1/plasmida/reports/add`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: fd,
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setSubmitError(data?.message || "Upload failed. Please try again.");
+        setSaving(false);
+        return;
+      }
+
+      // success
+      onClose();
+      // optional: navigate or show toast
+      alert("✅ Report uploaded successfully.");
+    } catch (err) {
+      console.error("Upload error:", err);
+      setSubmitError("Network or server error. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -339,6 +397,10 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
               </div>
             </div>
 
+            {submitError && (
+              <div className="col-span-full text-red-500 text-sm mb-2">{submitError}</div>
+            )}
+
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
@@ -350,10 +412,11 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
 
               <button
                 type="submit"
-                className="px-4 py-2 rounded-md bg-sky-600 text-white font-medium hover:bg-sky-700 transition flex items-center gap-2"
+                disabled={saving}
+                className={`px-4 py-2 rounded-md ${saving ? 'bg-slate-400 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-700'} text-white font-medium transition flex items-center gap-2`}
               >
                 <FiSave />
-                <span>Save Project</span>
+                <span>{saving ? 'Saving...' : 'Save Project'}</span>
               </button>
             </div>
           </form>
