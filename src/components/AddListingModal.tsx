@@ -94,7 +94,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
     setSaving(true);
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
       const fd = new FormData();
 
       fd.append("projectName", formData.projectName);
