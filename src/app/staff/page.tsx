@@ -28,7 +28,7 @@ export default function StaffPage() {
 
         <button
           onClick={() => setShowAddStaff(true)}
-          className="inline-flex items-center gap-2 h-10 px-3 rounded bg-sky-600 text-white hover:bg-sky-700 transition"
+          className="inline-flex items-center gap-2 h-10 px-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-600 transition"
         >
           + Add New Staff
         </button>

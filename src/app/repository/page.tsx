@@ -230,7 +230,7 @@ export default function RepositoryPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push("/upload")}
-            className="h-10 inline-flex items-center gap-2 rounded-md bg-sky-600 text-white px-3 font-medium hover:bg-sky-700 transition"
+            className="h-10 inline-flex items-center gap-2 rounded-md bg-blue-600 text-white px-3 font-medium hover:bg-blue-600 transition"
           >
             + Upload Report
           </button>

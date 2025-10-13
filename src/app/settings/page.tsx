@@ -58,7 +58,7 @@ export default function SettingsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={handleSave} className="inline-flex items-center gap-2 h-10 px-3 rounded bg-sky-600 text-white hover:bg-sky-700 transition">Save Changes</button>
+          <button onClick={handleSave} className="inline-flex items-center gap-2 h-10 px-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-600 transition">Save Changes</button>
           <button onClick={handleReset} className="h-10 px-3 rounded border border-gray-200 text-gray-800 hover:bg-gray-50 transition">Reset</button>
         </div>
       </header>
@@ -163,7 +163,7 @@ export default function SettingsPage() {
           <div className="mt-4 space-y-3">
             <div className="text-sm text-gray-800">Download a copy of your data</div>
             <div className="flex items-center gap-2">
-              <button className="h-10 px-3 rounded bg-sky-600 text-white hover:bg-sky-700 transition">Export</button>
+              <button className="h-10 px-3 rounded bg-blue-600 text-white hover:bg-blue-600 transition">Export</button>
               <button className="h-10 px-3 rounded border border-gray-200 text-gray-800 hover:bg-gray-50 transition">Delete Account</button>
             </div>
           </div>
