@@ -10,11 +10,52 @@ import { FiLock, FiMail } from "react-icons/fi";
 export default function HomeLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("https://plasmida.onrender.com/api/v1/plasmida/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Backend sends 500 when email or password is invalid
+        setErrorMessage(data.message || "Invalid email or password");
+        setLoading(false);
+        return; // 🚫 Stop navigation
+      }
+
+      // ✅ Success
+      console.log("Login successful:", data);
+
+      // (Optional) Save token if available
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      // Navigate after success only
+      router.push("/repository");
+
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setErrorMessage("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-gradient-to-r from-white via-sky-50 to-white overflow-hidden">
-      {/* Subtle side accents to match screenshot */}
       <div aria-hidden className="pointer-events-none absolute -left-36 top-6 h-72 w-72 rounded-full bg-sky-100/60 blur-3xl" />
       <div aria-hidden className="pointer-events-none absolute -right-36 bottom-6 h-80 w-80 rounded-full bg-sky-100/40 blur-3xl" />
 
@@ -26,7 +67,10 @@ export default function HomeLogin() {
         <h1 className="text-xl md:text-2xl font-bold text-slate-800 mb-0">Welcome to PLASMIDA TrainMaster</h1>
         <p className="text-sm text-slate-500 mt-2 mb-6">Sign in to continue</p>
 
-        <button className="flex h-11 items-center justify-center w-full gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition">
+        <button
+          type="button"
+          className="flex h-11 items-center justify-center w-full gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition"
+        >
           <FcGoogle className="text-xl" aria-hidden />
           <span className="text-sm font-medium text-slate-700">Continue with Google</span>
         </button>
@@ -37,7 +81,8 @@ export default function HomeLogin() {
           <hr className="flex-1 border-slate-200" />
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); router.push('/repository'); }}>
+        {/* LOGIN FORM */}
+        <form onSubmit={handleLogin} className="space-y-4">
           <div className="text-center">
             <span className="text-sm text-slate-500 mb-2 inline-block">Email</span>
             <div className="mx-auto max-w-full">
@@ -50,7 +95,7 @@ export default function HomeLogin() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
                   autoComplete="email"
-                  aria-label="Email"
+                  required
                 />
               </div>
             </div>
@@ -68,17 +113,35 @@ export default function HomeLogin() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
                   autoComplete="current-password"
-                  aria-label="Password"
+                  required
                 />
               </div>
             </div>
           </div>
 
-          <button className="w-full h-11 bg-slate-900 text-white rounded-xl font-semibold hover:bg-black transition">Sign In</button>
+          {/* ERROR MESSAGE */}
+          {errorMessage && (
+            <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full h-11 rounded-xl font-semibold text-white transition ${
+              loading ? "bg-slate-400 cursor-not-allowed" : "bg-slate-900 hover:bg-black"
+            }`}
+          >
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
 
           <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
             <a href="#" className="hover:underline text-slate-600">Forgot password?</a>
-            <p className="text-slate-600">Need an account? <Link href="/signup" className="font-medium text-slate-900 hover:underline">Sign up</Link></p>
+            <p className="text-slate-600">
+              Need an account?{" "}
+              <Link href="/signup" className="font-medium text-slate-900 hover:underline">
+                Sign up
+              </Link>
+            </p>
           </div>
         </form>
       </section>

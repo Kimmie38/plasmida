@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiDatabase, FiUpload, FiSearch, FiUsers, FiFolder, FiSettings } from "react-icons/fi";
+import { FiDatabase, FiUpload, FiSearch, FiUsers, FiFolder, FiSettings,FiFileText } from "react-icons/fi";
 
 export default function Sidebar() {
   const pathname = usePathname() || "/";
@@ -15,10 +15,10 @@ export default function Sidebar() {
     <aside className="sidebar-root hidden md:fixed md:left-0 md:top-0 md:h-screen md:w-72 md:bg-white md:border-r md:border-slate-100 md:flex md:flex-col md:z-20 md:overflow-y-auto">
       <div className="px-4 pt-5 pb-4">
         <div className="brand-row flex items-center gap-3">
-          <div className="brand-logo h-12 w-12 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor">
-              <path strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" d="M8 6h8M8 12h8M8 18h8M4 6h.01M4 12h.01M4 18h.01" />
-            </svg>
+          <div className="brand-logo h-12 w-12 rounded-xl  text-white flex items-center justify-center shadow-sm">
+             <div className="file-icon h-15 w-15 rounded-md  flex items-center justify-center text-sky-600">
+                 <FiFileText />
+               </div>
           </div>
 
           <div className="brand-text">
