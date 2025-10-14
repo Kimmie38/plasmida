@@ -163,6 +163,12 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
       }
 
       // success
+      try {
+        // notify other parts of the app to refresh
+        window.dispatchEvent(new Event('reports:updated'));
+      } catch (e) {
+        // ignore
+      }
       onClose();
       alert("✅ Report uploaded successfully.");
       console.log('Upload success', data);
