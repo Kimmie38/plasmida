@@ -446,7 +446,7 @@ export default function RepositoryPage() {
       </section>
 
       <footer className="mt-8 text-center text-sm text-slate-500">
-        Showing {filteredCards.length} of {dummyCards.length} reports
+        Showing {filteredCards.length} of {reports.length} reports
       </footer>
     </div>
   );
