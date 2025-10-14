@@ -29,12 +29,12 @@ export default function HomeLogin() {
     setLoading(true);
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
-      const url = `${API_URL.replace(/\/$/, "")}/api/v1/plasmida/auth/login`;
+      // Use server-side proxy to avoid CORS issues in the browser
+      const url = '/api/proxy/auth/login';
 
       const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
