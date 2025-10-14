@@ -48,7 +48,24 @@ export default function HomeLogin() {
       }
 
       if (!response.ok) {
-        const serverMsg = data && typeof data === 'object' ? data.message || JSON.stringify(data) : String(data);
+        const safeStringify = (v: any) => {
+          if (v == null) return String(v);
+          if (typeof v === 'string') return v;
+          try {
+            const seen = new WeakSet();
+            return JSON.stringify(v, function (_key, val) {
+              if (val && typeof val === 'object') {
+                if (seen.has(val)) return '[Circular]';
+                seen.add(val);
+              }
+              return val;
+            }, 2);
+          } catch (e) {
+            try { return String(v); } catch { return '[Unknown error]'; }
+          }
+        };
+
+        const serverMsg = data && typeof data === 'object' ? (data.message ? String(data.message) : safeStringify(data)) : String(data);
         setErrorMessage(serverMsg || `Login failed (${response.status}).`);
         console.error('Login failed', { status: response.status, body: data });
         setLoading(false);
