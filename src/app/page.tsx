@@ -68,6 +68,7 @@ export default function HomeLogin() {
 
         const serverMsg = data && typeof data === 'object' ? (data.message ? String(data.message) : safeStringify(data)) : String(data);
         setErrorMessage(serverMsg || `Login failed (${response.status}).`);
+        setLoginDebug({ status: response.status, statusText: response.statusText, body: data });
         console.error('Login failed', { status: response.status, body: data });
         setLoading(false);
         return;
@@ -76,6 +77,7 @@ export default function HomeLogin() {
       // Require token before treating as authenticated
       if (!data || !data.token) {
         setErrorMessage(data?.message || "Invalid email or password");
+        setLoginDebug({ status: response.status, body: data });
         setLoading(false);
         return;
       }
@@ -84,6 +86,7 @@ export default function HomeLogin() {
       router.push("/repository");
     } catch (err: any) {
       console.error("Login error:", err);
+      setLoginDebug({ error: String(err) });
       // Common cause: network/CORS failure — give helpful hint
       setErrorMessage(
         err?.message && err?.message.includes('Failed to fetch')
