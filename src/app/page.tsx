@@ -168,6 +168,13 @@ export default function HomeLogin() {
             <p className="text-red-500 text-sm text-center">{errorMessage}</p>
           )}
 
+          {loginDebug && (
+            <div className="mt-2 bg-slate-100 p-3 rounded text-xs text-slate-700">
+              <div className="font-medium mb-1">Debug info (copy for support):</div>
+              <pre className="whitespace-pre-wrap">{JSON.stringify(loginDebug, null, 2)}</pre>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
