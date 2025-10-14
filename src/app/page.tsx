@@ -14,6 +14,15 @@ export default function HomeLogin() {
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
+  useEffect(() => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (token) router.push('/repository');
+    } catch (e) {
+      // ignore
+    }
+  }, [router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
