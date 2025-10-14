@@ -36,14 +36,17 @@ export default function HomeLogin() {
       }
 
       // ✅ Success
-      console.log("Login successful:", data);
+      console.log("Login response:", data);
 
-      // (Optional) Save token if available
-      if (data.token) {
-        localStorage.setItem("token", data.token);
+      // Require token before treating as authenticated
+      if (!data || !data.token) {
+        setErrorMessage(data?.message || "Invalid email or password");
+        setLoading(false);
+        return;
       }
 
-      // Navigate after success only
+      // Save token and navigate
+      localStorage.setItem("token", data.token);
       router.push("/repository");
 
     } catch (err: any) {
