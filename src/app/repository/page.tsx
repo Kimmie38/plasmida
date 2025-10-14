@@ -83,108 +83,68 @@ const categoryColor = (tag: string) => {
 export default function RepositoryPage() {
   const router = useRouter();
 
-  const dummyCards: ReportCard[] = Array.from({ length: 9 }).map((_, i) => ({
-    id: i + 1,
-    title: [
-      "Corporate Leadership Excellence Program",
-      "Industrial Safety Training Program",
-      "Digital Marketing Skills Bootcamp",
-      "Sales Excellence Masterclass",
-      "Executive Communication Workshop",
-      "Safety Protocol Training Report",
-      "Technical Skills Assessment Results",
-      "Leadership Development Workshop - Q4 2024",
-      "Communication Skills Workshop Summary",
-    ][i % 9],
-    fileName: [
-      "leadership-workshop-q4-2024.pdf",
-      "safety-training-dangote-2024.pdf",
-      "digital-marketing-gtbank.xlsx",
-      "sales-training-gsk.pdf",
-      "communication-workshop-mtn.docx",
-      "safety-protocol-2024.pdf",
-      "tech-assessment-results.xlsx",
-      "leadership-workshop-q4-2024.pdf",
-      "communication-workshop.docx",
-    ][i % 9],
-    description:
-      "Comprehensive training covering key topics, outcomes and practical exercises designed for workplace improvement and skill development.",
-    org: [
-      "First Bank Nigeria",
-      "Dangote Cement",
-      "GTBank",
-      "GlaxoSmithKline Nigeria",
-      "MTN Nigeria",
-      "Safety Institute",
-      "Tech Lab",
-      "First Bank Nigeria",
-      "Training Center",
-    ][i % 9],
-    price: ["₦2,500,000", "₦1,800,000", "₦1,200,000", "₦950,000", "₦3,200,000", "", "", "", ""][
-      i % 9
-    ],
-    date: [
-      "Nov 15, 2024",
-      "Oct 20, 2024",
-      "Dec 1, 2024",
-      "Nov 28, 2024",
-      "Nov 10, 2024",
-      "Oct 20, 2024",
-      "Dec 1, 2024",
-      "Nov 15, 2024",
-      "Nov 10, 2024",
-    ][i % 9],
-    duration: ["3 days", "3 days", "5 days", "2 days", "3 days", "", "", "", ""][i % 9],
-    contact: [
-      "Dr. Sarah Adebayo",
-      "Engr. Michael Okafor",
-      "Adaora Nwankwo",
-      "Jennifer Okoli",
-      "Prof. Kemi Rotimi",
-      "Mike Rodriguez",
-      "Alex Chen",
-      "Sarah Johnson",
-      "Emily Davis",
-    ][i % 9],
-    attendees: [
-      "25 senior managers",
-      "120 factory workers and supervisors",
-      "30 marketing executives",
-      "18 senior sales representatives",
-      "15 C-level executives",
-      "120 employees",
-      "30 developers",
-      "25 managers",
-      "40 staff members",
-    ][i % 9],
-    location: [
-      "First Bank Training Center, Lagos",
-      "Dangote Cement Plant, Ibese",
-      "GTBank Academy, Victoria Island",
-      "GSK Office, Ikeja",
-      "MTN Headquarters, Ikoyi",
-      "Main Auditorium",
-      "Tech Lab",
-      "Main Conference Room",
-      "Training Center",
-    ][i % 9],
-    tags: [
-      ["Leadership", "Management", "Corporate"],
-      ["Safety", "Compliance", "Manufacturing"],
-      ["Digital Marketing", "Technical", "SEO"],
-      ["Sales", "Pharmaceutical"],
-      ["Communication", "Presentation"],
-      ["Safety", "Annual", "Protocols"],
-      ["Technical", "Assessment", "Skills"],
-      ["Leadership", "Management", "Quarterly"],
-      ["Communication", "Presentation", "Interpersonal"],
-    ][i % 9],
-    status: i % 2 === 0 ? "completed" : "draft",
-    size: ["1.95 MB", "1.46 MB", "500 KB", "1.71 MB", "875 KB", "1.46 MB", "500 KB", "1.95 MB", "875 KB"][
-      i % 9
-    ],
-    uploaded: "Uploaded Sep 20, 2025",
-  }));
+  const [reports, setReports] = useState<ReportCard[]>([]);
+  const [loadingReports, setLoadingReports] = useState(false);
+  const [reportsError, setReportsError] = useState<string | null>(null);
+
+  const mapServerToReport = (item: any): ReportCard => ({
+    id: item.id || item._id || Math.random(),
+    title: item.reportTitle || item.title || item.name || "Untitled",
+    fileName: item.fileName || item.originalName || item.file?.name || "file",
+    description: item.projectDescription || item.description || item.summary || "",
+    org: item.clientCompany || item.org || item.company || "",
+    price: item.projectCost || item.price || "",
+    date: item.trainingStartDate || item.date || item.uploadedDate || "",
+    duration: item.duration ? `${item.duration} days` : item.durationDays ? `${item.durationDays} days` : item.duration || "",
+    contact: item.instructor || item.contact || "",
+    attendees: item.participants || item.attendees || "",
+    location: item.trainingLocation || item.location || "",
+    tags: Array.isArray(item.tags) ? item.tags : (typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : []),
+    status: item.projectStatus || item.status || "",
+    size: item.size || (item.file && item.file.size ? `${(item.file.size / (1024*1024)).toFixed(2)} MB` : ""),
+    uploaded: item.uploaded || item.uploadedAt || item.projectCompletionDate || "",
+  });
+
+  const fetchReports = async () => {
+    setLoadingReports(true);
+    setReportsError(null);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const res = await fetch(`${API_URL}/api/v1/plasmida/reports`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!res.ok) {
+        const body = await res.text().catch(() => null);
+        setReportsError(`Failed to load reports (${res.status}): ${body}`);
+        setLoadingReports(false);
+        return;
+      }
+
+      const data = await res.json().catch(() => null);
+      if (!Array.isArray(data)) {
+        setReportsError('Unexpected response from server');
+        setLoadingReports(false);
+        return;
+      }
+
+      setReports(data.map(mapServerToReport));
+    } catch (err) {
+      console.error('Fetch reports error', err);
+      setReportsError('Network error while fetching reports');
+    } finally {
+      setLoadingReports(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+    const onUpdated = () => fetchReports();
+    window.addEventListener('reports:updated', onUpdated as EventListener);
+    return () => window.removeEventListener('reports:updated', onUpdated as EventListener);
+  }, []);
+
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Categories");
