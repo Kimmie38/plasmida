@@ -153,7 +153,7 @@ export default function RepositoryPage() {
 
   const filteredCards = useMemo(() => {
     const cat = category;
-    return dummyCards
+    return reports
       .filter((card) => {
         const q = search.trim().toLowerCase();
         const titleMatch = card.title.toLowerCase().includes(q);
@@ -177,7 +177,7 @@ export default function RepositoryPage() {
         const db = new Date(b.date).getTime();
         return sort === "Newest first" ? db - da : da - db;
       });
-  }, [dummyCards, search, category, type, sort]);
+  }, [reports, search, category, type, sort]);
 
   // Carousel state for mobile
   const carouselRef = useRef<HTMLDivElement | null>(null);
