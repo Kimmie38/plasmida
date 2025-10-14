@@ -20,23 +20,31 @@ export default function HomeLogin() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://plasmida.onrender.com/api/v1/plasmida/auth/login", {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
+      const url = `${API_URL.replace(/\/$/, "")}/api/v1/plasmida/auth/login`;
+
+      const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Backend sends 500 when email or password is invalid
-        setErrorMessage(data.message || "Invalid email or password");
-        setLoading(false);
-        return; // 🚫 Stop navigation
+      // Try to parse response body safely
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (e) {
+        const text = await response.text().catch(() => null);
+        data = text || null;
       }
 
-      // ✅ Success
-      console.log("Login response:", data);
+      if (!response.ok) {
+        const serverMsg = data && typeof data === 'object' ? data.message || JSON.stringify(data) : String(data);
+        setErrorMessage(serverMsg || `Login failed (${response.status}).`);
+        console.error('Login failed', { status: response.status, body: data });
+        setLoading(false);
+        return;
+      }
 
       // Require token before treating as authenticated
       if (!data || !data.token) {
@@ -45,13 +53,16 @@ export default function HomeLogin() {
         return;
       }
 
-      // Save token and navigate
       localStorage.setItem("token", data.token);
       router.push("/repository");
-
     } catch (err: any) {
       console.error("Login error:", err);
-      setErrorMessage("Network error. Please try again.");
+      // Common cause: network/CORS failure — give helpful hint
+      setErrorMessage(
+        err?.message && err?.message.includes('Failed to fetch')
+          ? 'Network error or CORS blocked. Check backend URL and CORS configuration.'
+          : 'Network error. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
