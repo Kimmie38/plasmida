@@ -12,6 +12,7 @@ export default function HomeLogin() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [loginDebug, setLoginDebug] = useState<any | null>(null);
   const router = useRouter();
 
   useEffect(() => {
