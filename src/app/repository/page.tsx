@@ -112,9 +112,33 @@ export default function RepositoryPage() {
     const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-    const res = await fetch(`${API_URL}/api/v1/plasmida/reports`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
+    const safeFetch = async (input: RequestInfo, init?: RequestInit, timeout = 10000) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      try {
+        return await fetch(input, { signal: controller.signal, ...(init || {}) });
+      } finally {
+        clearTimeout(id);
+      }
+    };
+
+    let res: Response;
+    try {
+      res = await safeFetch(`${API_URL}/api/v1/plasmida/reports`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+    } catch (err: any) {
+      console.error("Fetch request failed", err);
+      if (err?.name === 'AbortError') {
+        setReportsError('Request timed out while fetching reports');
+      } else if (err instanceof TypeError && /failed to fetch/i.test(String(err.message))) {
+        setReportsError('Network error while fetching reports');
+      } else {
+        setReportsError('Unknown error while fetching reports');
+      }
+      setLoadingReports(false);
+      return;
+    }
 
     if (!res.ok) {
       const body = await res.text().catch(() => null);
