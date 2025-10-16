@@ -20,7 +20,7 @@ export default function HomeLogin() {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       if (token) router.push("/repository");
     } catch (e) {
-      // ignore errors accessing localStorage
+
     }
   }, [router]);
 
