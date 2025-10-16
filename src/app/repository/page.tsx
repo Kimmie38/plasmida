@@ -390,8 +390,10 @@ export default function RepositoryPage() {
                   <div className="text-xs text-slate-400 mt-1 flex items-center gap-2">
                     <span className="text-slate-500 font-medium">{c.fileName}</span>
                   </div>
+                <p className="text-gray-700 text-sm">
+             {c.description.length > 100 ? c.description.slice(0, 100) + "..." : c.description}
+                  </p>
 
-                  <p className="text-sm text-slate-500 mt-3 line-clamp-3">{c.description}</p>
 
                   <div className="mt-4 space-y-2 text-sm text-slate-600">
                     {c.price && (
