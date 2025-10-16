@@ -13,6 +13,9 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [formVisible, setFormVisible] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [uploadDebug, setUploadDebug] = useState<any | null>(null);
 
   useEffect(() => {
     if (uploadedFile) {
@@ -80,11 +83,102 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("Submitted data:", { ...formData, file });
-    alert("Report uploaded successfully!");
-    onClose();
+    setSubmitError(null);
+
+    if (!file) {
+      setSubmitError("No file selected.");
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
+      const fd = new FormData();
+
+      fd.append("projectName", formData.projectName);
+      fd.append("clientCompany", formData.clientCompany);
+      fd.append("reportTitle", formData.reportTitle);
+      fd.append("trainingCategory", formData.trainingCategory);
+      fd.append("projectDescription", formData.description);
+      fd.append("projectCost", formData.projectCost);
+      fd.append("duration", formData.durationDays);
+      fd.append("projectStatus", formData.projectStatus);
+      fd.append("instructor", formData.instructor);
+      fd.append("participants", formData.participants);
+      fd.append("trainingStartDate", formData.startDate);
+      fd.append("projectCompletionDate", formData.completionDate);
+      fd.append("trainingLocation", formData.location);
+
+      const tagsArr = formData.tags ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean) : [];
+      fd.append("tags", JSON.stringify(tagsArr));
+
+      fd.append("additionalNotes", formData.additionalNotes);
+      fd.append("file", file, file.name);
+
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+      const res = await fetch(`${API_URL}/api/v1/plasmida/reports/add`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: fd,
+      });
+
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch (e) {
+        const text = await res.text().catch(() => null);
+        data = text || null;
+      }
+
+      if (!res.ok) {
+        let serverMsg: string | null = null;
+        if (data) {
+          if (typeof data === 'object') {
+            try {
+              serverMsg = data.message || JSON.stringify(data);
+            } catch (e) {
+              serverMsg = String(data);
+            }
+          } else {
+            serverMsg = String(data);
+          }
+        }
+
+        const display = serverMsg || `Upload failed (${res.status}).`;
+        setSubmitError(display);
+        const debug = {
+          status: res.status,
+          statusText: res.statusText,
+          headers: Object.fromEntries(res.headers ? Array.from(res.headers.entries()) : []),
+          body: data,
+        };
+        setUploadDebug(debug);
+        console.error('Upload failed', debug);
+        setSaving(false);
+        return;
+      }
+
+      // success
+      try {
+        // notify other parts of the app to refresh
+        window.dispatchEvent(new Event('reports:updated'));
+      } catch (e) {
+        // ignore
+      }
+      onClose();
+      alert("✅ Report uploaded successfully.");
+      console.log('Upload success', data);
+    } catch (err) {
+      console.error("Upload error:", err);
+      setSubmitError("Network or server error. Please try again.");
+      setUploadDebug({ error: String(err) });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -339,6 +433,17 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
               </div>
             </div>
 
+            {submitError && (
+              <div className="col-span-full text-red-500 text-sm mb-2">{submitError}</div>
+            )}
+
+            {uploadDebug && (
+              <div className="col-span-full bg-slate-100 rounded-md p-3 text-xs text-slate-700 mb-2">
+                <div className="font-medium mb-1">Debug info (paste to support):</div>
+                <pre className="whitespace-pre-wrap">{JSON.stringify(uploadDebug, null, 2)}</pre>
+              </div>
+            )}
+
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
@@ -350,10 +455,11 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
 
               <button
                 type="submit"
-                className="px-4 py-2 rounded-md bg-sky-600 text-white font-medium hover:bg-sky-700 transition flex items-center gap-2"
+                disabled={saving}
+                className={`px-4 py-2 rounded-md ${saving ? 'bg-slate-400 cursor-not-allowed' : 'bg-sky-600 hover:bg-sky-700'} text-white font-medium transition flex items-center gap-2`}
               >
                 <FiSave />
-                <span>Save Project</span>
+                <span>{saving ? 'Saving...' : 'Save Project'}</span>
               </button>
             </div>
           </form>

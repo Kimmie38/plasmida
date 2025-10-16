@@ -12,7 +12,7 @@ export default function Sidebar() {
   const isSettings = pathname.toLowerCase().startsWith("/settings");
 
   return (
-    <aside className="sidebar-root fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-100 flex flex-col z-20 overflow-y-auto">
+    <aside className="sidebar-root hidden md:fixed md:left-0 md:top-0 md:h-screen md:w-72 md:bg-white md:border-r md:border-slate-100 md:flex md:flex-col md:z-20 md:overflow-y-auto">
       <div className="px-4 pt-5 pb-4">
         <div className="brand-row flex items-center gap-3">
           <div className="brand-logo h-12 w-12 rounded-xl  text-white flex items-center justify-center shadow-sm">

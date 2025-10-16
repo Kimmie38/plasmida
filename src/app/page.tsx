@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FiLock, FiMail } from "react-icons/fi";
@@ -12,7 +12,17 @@ export default function HomeLogin() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [loginDebug, setLoginDebug] = useState<any | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (token) router.push('/repository');
+    } catch (e) {
+      // ignore
+    }
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,35 +30,69 @@ export default function HomeLogin() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://plasmida.onrender.com/api/v1/plasmida/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      // Use server-side proxy to avoid CORS issues in the browser
+      const url = '/api/proxy/api/v1/plasmida/auth/login';
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      // Try to parse response body safely
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch (e) {
+        const text = await response.text().catch(() => null);
+        data = text || null;
+      }
 
       if (!response.ok) {
-        // Backend sends 500 when email or password is invalid
-        setErrorMessage(data.message || "Invalid email or password");
+        const safeStringify = (v: any) => {
+          if (v == null) return String(v);
+          if (typeof v === 'string') return v;
+          try {
+            const seen = new WeakSet();
+            return JSON.stringify(v, function (_key, val) {
+              if (val && typeof val === 'object') {
+                if (seen.has(val)) return '[Circular]';
+                seen.add(val);
+              }
+              return val;
+            }, 2);
+          } catch (e) {
+            try { return String(v); } catch { return '[Unknown error]'; }
+          }
+        };
+
+        const serverMsg = data && typeof data === 'object' ? (data.message ? String(data.message) : safeStringify(data)) : String(data);
+        setErrorMessage(serverMsg || `Login failed (${response.status}).`);
+        setLoginDebug({ status: response.status, statusText: response.statusText, body: data });
+        console.error('Login failed', { status: response.status, body: data });
         setLoading(false);
-        return; // 🚫 Stop navigation
+        return;
       }
 
-      // ✅ Success
-      console.log("Login successful:", data);
-
-      // (Optional) Save token if available
-      if (data.token) {
-        localStorage.setItem("token", data.token);
+      // Require token before treating as authenticated
+      if (!data || !data.token) {
+        setErrorMessage(data?.message || "Invalid email or password");
+        setLoginDebug({ status: response.status, body: data });
+        setLoading(false);
+        return;
       }
 
-      // Navigate after success only
+      localStorage.setItem("token", data.token);
       router.push("/repository");
-
     } catch (err: any) {
       console.error("Login error:", err);
-      setErrorMessage("Network error. Please try again.");
+      setLoginDebug({ error: String(err) });
+      // Common cause: network/CORS failure — give helpful hint
+      setErrorMessage(
+        err?.message && err?.message.includes('Failed to fetch')
+          ? 'Network error or CORS blocked. Check backend URL and CORS configuration.'
+          : 'Network error. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -59,7 +103,7 @@ export default function HomeLogin() {
       <div aria-hidden className="pointer-events-none absolute -left-36 top-6 h-72 w-72 rounded-full bg-sky-100/60 blur-3xl" />
       <div aria-hidden className="pointer-events-none absolute -right-36 bottom-6 h-80 w-80 rounded-full bg-sky-100/40 blur-3xl" />
 
-      <section className="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-xl p-8 text-center">
+      <section className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-sm bg-white rounded-3xl shadow-xl p-6 sm:p-8 text-center mx-4">
         <div className="mx-auto mb-4 w-fit rounded-full bg-white p-2 ring-1 ring-slate-200 shadow-sm">
           <Image src="/images/logo.png" alt="PLASMIDA crest" width={84} height={84} className="rounded-full" priority />
         </div>
@@ -122,6 +166,13 @@ export default function HomeLogin() {
           {/* ERROR MESSAGE */}
           {errorMessage && (
             <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+          )}
+
+          {loginDebug && (
+            <div className="mt-2 bg-slate-100 p-3 rounded text-xs text-slate-700">
+              <div className="font-medium mb-1">Debug info (copy for support):</div>
+              <pre className="whitespace-pre-wrap">{JSON.stringify(loginDebug, null, 2)}</pre>
+            </div>
           )}
 
           <button
