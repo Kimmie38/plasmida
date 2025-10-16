@@ -39,7 +39,7 @@ export default function ClientErrorHandler() {
         }
         if (/fullstory|fs\.js|Failed to fetch/i.test(msg)) {
           console.warn("Ignored external fetch rejection:", msg);
-          try { ev.preventDefault?.(); } catch (e) {}
+          try { ev.preventDefault?.(); ev.stopImmediatePropagation?.(); } catch (e) {}
         }
       } catch (err) {
         // swallow
