@@ -105,7 +105,7 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
       fd.append("projectDescription", formData.description);
       fd.append("projectCost", formData.projectCost);
       fd.append("duration", formData.durationDays);
-      fd.append("projectStatus", formData.projectStatus);
+      fd.append("projectStatus", formData.projectStatus  || "Completed");
       fd.append("instructor", formData.instructor);
       fd.append("participants", formData.participants);
       fd.append("trainingStartDate", formData.startDate);
@@ -348,14 +348,15 @@ export default function AddListingModal({ onClose, uploadedFile = null, mode = "
                 <label className="block text-sm font-medium text-slate-700 mb-1">Project Status</label>
                 <select
                   name="projectStatus"
-                  value={formData.projectStatus}
-                  onChange={handleInputChange}
+                  value={formData.projectStatus || "Completed"}
+                  onChange={(e) => setFormData({ ...formData, projectStatus: e.target.value })}
                   className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
                 >
-                  <option>Completed</option>
-                  <option>Draft</option>
-                  <option>In Progress</option>
-                </select>
+                    <option value="Completed">Completed</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Planned">Planned</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
               </div>
 
               <div>

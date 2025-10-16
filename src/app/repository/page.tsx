@@ -105,38 +105,41 @@ export default function RepositoryPage() {
     uploaded: item.uploaded || item.uploadedAt || item.projectCompletionDate || "",
   });
 
-  const fetchReports = async () => {
-    setLoadingReports(true);
-    setReportsError(null);
-    try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      const res = await fetch(`${API_URL}/api/v1/plasmida/reports`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
+ const fetchReports = async () => {
+  setLoadingReports(true);
+  setReportsError(null);
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-      if (!res.ok) {
-        const body = await res.text().catch(() => null);
-        setReportsError(`Failed to load reports (${res.status}): ${body}`);
-        setLoadingReports(false);
-        return;
-      }
+    const res = await fetch(`${API_URL}/api/v1/plasmida/reports`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
 
-      const data = await res.json().catch(() => null);
-      if (!Array.isArray(data)) {
-        setReportsError('Unexpected response from server');
-        setLoadingReports(false);
-        return;
-      }
-
-      setReports(data.map(mapServerToReport));
-    } catch (err) {
-      console.error('Fetch reports error', err);
-      setReportsError('Network error while fetching reports');
-    } finally {
+    if (!res.ok) {
+      const body = await res.text().catch(() => null);
+      setReportsError(`Failed to load reports (${res.status}): ${body}`);
       setLoadingReports(false);
+      return;
     }
-  };
+
+    const response = await res.json().catch(() => null);
+    // ✅ The backend returns { statusCode, message, data }
+    const list = Array.isArray(response?.data) ? response.data : [];
+
+    if (list.length === 0) {
+      console.warn("No reports found or unexpected structure", response);
+    }
+
+    setReports(list.map(mapServerToReport));
+  } catch (err) {
+    console.error("Fetch reports error", err);
+    setReportsError("Network error while fetching reports");
+  } finally {
+    setLoadingReports(false);
+  }
+};
+
 
   useEffect(() => {
     fetchReports();
