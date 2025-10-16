@@ -109,12 +109,36 @@ export default function RepositoryPage() {
   setLoadingReports(true);
   setReportsError(null);
   try {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
+    const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-    const res = await fetch(`${API_URL}/api/v1/plasmida/reports`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
+    const safeFetch = async (input: RequestInfo, init?: RequestInit, timeout = 10000) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      try {
+        return await fetch(input, { signal: controller.signal, ...(init || {}) });
+      } finally {
+        clearTimeout(id);
+      }
+    };
+
+    let res: Response;
+    try {
+      res = await safeFetch(`${API_URL}/api/v1/plasmida/reports`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+    } catch (err: any) {
+      console.error("Fetch request failed", err);
+      if (err?.name === 'AbortError') {
+        setReportsError('Request timed out while fetching reports');
+      } else if (err instanceof TypeError && /failed to fetch/i.test(String(err.message))) {
+        setReportsError('Network error while fetching reports');
+      } else {
+        setReportsError('Unknown error while fetching reports');
+      }
+      setLoadingReports(false);
+      return;
+    }
 
     if (!res.ok) {
       const body = await res.text().catch(() => null);
@@ -303,7 +327,7 @@ export default function RepositoryPage() {
                       <span className="text-slate-500 font-medium">{c.fileName}</span>
                     </div>
 
-                    <p className="text-sm text-slate-500 mt-3 line-clamp-3">{c.description}</p>
+                    <p className="text-sm text-slate-500 mt-3 line-clamp-3 overflow-hidden break-words break-all whitespace-normal">{c.description}</p>
 
                     <div className="mt-4 space-y-2 text-sm text-slate-600">
                       {c.price && (
@@ -390,9 +414,7 @@ export default function RepositoryPage() {
                   <div className="text-xs text-slate-400 mt-1 flex items-center gap-2">
                     <span className="text-slate-500 font-medium">{c.fileName}</span>
                   </div>
-                <p className="text-gray-700 text-sm">
-             {c.description.length > 100 ? c.description.slice(0, 100) + "..." : c.description}
-                  </p>
+                <p className="text-sm text-slate-500 mt-3 line-clamp-3 overflow-hidden break-words break-all whitespace-normal">{c.description}</p>
 
 
                   <div className="mt-4 space-y-2 text-sm text-slate-600">
