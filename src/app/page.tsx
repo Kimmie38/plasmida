@@ -17,10 +17,10 @@ export default function HomeLogin() {
 
   useEffect(() => {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      if (token) router.push('/repository');
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (token) router.push("/repository");
     } catch (e) {
-      // ignore
+      // ignore errors accessing localStorage
     }
   }, [router]);
 
@@ -30,68 +30,57 @@ export default function HomeLogin() {
     setLoading(true);
 
     try {
-      // Use server-side proxy to avoid CORS issues in the browser
-      const url = '/api/proxy/api/v1/plasmida/auth/login';
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL; // ✅ match your .env.local
+      if (!baseUrl) {
+        throw new Error("API base URL is not set. Please define NEXT_PUBLIC_API_URL in .env.local");
+      }
+
+      const url = `${baseUrl}/api/v1/plasmida/auth/login`;
 
       const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      // Try to parse response body safely
       let data: any = null;
       try {
         data = await response.json();
-      } catch (e) {
+      } catch {
         const text = await response.text().catch(() => null);
         data = text || null;
       }
 
       if (!response.ok) {
-        const safeStringify = (v: any) => {
-          if (v == null) return String(v);
-          if (typeof v === 'string') return v;
-          try {
-            const seen = new WeakSet();
-            return JSON.stringify(v, function (_key, val) {
-              if (val && typeof val === 'object') {
-                if (seen.has(val)) return '[Circular]';
-                seen.add(val);
-              }
-              return val;
-            }, 2);
-          } catch (e) {
-            try { return String(v); } catch { return '[Unknown error]'; }
-          }
-        };
-
-        const serverMsg = data && typeof data === 'object' ? (data.message ? String(data.message) : safeStringify(data)) : String(data);
-        setErrorMessage(serverMsg || `Login failed (${response.status}).`);
-        setLoginDebug({ status: response.status, statusText: response.statusText, body: data });
-        console.error('Login failed', { status: response.status, body: data });
-        setLoading(false);
-        return;
-      }
-
-      // Require token before treating as authenticated
-      if (!data || !data.token) {
-        setErrorMessage(data?.message || "Invalid email or password");
+        const message =
+          typeof data === "object"
+            ? data?.message || "Login failed"
+            : String(data || "Login failed");
+        setErrorMessage(message);
         setLoginDebug({ status: response.status, body: data });
-        setLoading(false);
+        console.error("Login failed", { status: response.status, body: data });
         return;
       }
 
-      localStorage.setItem("token", data.token);
+      // ✅ Corrected: extract token properly
+      const token = data?.data?.tokens?.token;
+      if (!token) {
+        setErrorMessage("No token returned. Please try again.");
+        setLoginDebug({ status: response.status, body: data });
+        return;
+      }
+
+      // ✅ Save token & redirect
+      localStorage.setItem("token", token);
+      setLoginDebug({ status: response.status, body: data });
       router.push("/repository");
     } catch (err: any) {
       console.error("Login error:", err);
       setLoginDebug({ error: String(err) });
-      // Common cause: network/CORS failure — give helpful hint
       setErrorMessage(
-        err?.message && err?.message.includes('Failed to fetch')
-          ? 'Network error or CORS blocked. Check backend URL and CORS configuration.'
-          : 'Network error. Please try again.'
+        err?.message?.includes("Failed to fetch")
+          ? "Network error or CORS issue. Check backend settings."
+          : err.message || "Unexpected error. Please try again."
       );
     } finally {
       setLoading(false);
@@ -100,15 +89,30 @@ export default function HomeLogin() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-gradient-to-r from-white via-sky-50 to-white overflow-hidden">
-      <div aria-hidden className="pointer-events-none absolute -left-36 top-6 h-72 w-72 rounded-full bg-sky-100/60 blur-3xl" />
-      <div aria-hidden className="pointer-events-none absolute -right-36 bottom-6 h-80 w-80 rounded-full bg-sky-100/40 blur-3xl" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-36 top-6 h-72 w-72 rounded-full bg-sky-100/60 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-36 bottom-6 h-80 w-80 rounded-full bg-sky-100/40 blur-3xl"
+      />
 
       <section className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-sm bg-white rounded-3xl shadow-xl p-6 sm:p-8 text-center mx-4">
         <div className="mx-auto mb-4 w-fit rounded-full bg-white p-2 ring-1 ring-slate-200 shadow-sm">
-          <Image src="/images/logo.png" alt="PLASMIDA crest" width={84} height={84} className="rounded-full" priority />
+          <Image
+            src="/images/logo.png"
+            alt="PLASMIDA crest"
+            width={84}
+            height={84}
+            className="rounded-full"
+            priority
+          />
         </div>
 
-        <h1 className="text-xl md:text-2xl font-bold text-slate-800 mb-0">Welcome to PLASMIDA TrainMaster</h1>
+        <h1 className="text-xl md:text-2xl font-bold text-slate-800 mb-0">
+          Welcome to PLASMIDA TrainMaster
+        </h1>
         <p className="text-sm text-slate-500 mt-2 mb-6">Sign in to continue</p>
 
         <button
@@ -186,7 +190,9 @@ export default function HomeLogin() {
           </button>
 
           <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-            <a href="#" className="hover:underline text-slate-600">Forgot password?</a>
+            <a href="#" className="hover:underline text-slate-600">
+              Forgot password?
+            </a>
             <p className="text-slate-600">
               Need an account?{" "}
               <Link href="/signup" className="font-medium text-slate-900 hover:underline">
