@@ -109,7 +109,7 @@ export default function RepositoryPage() {
   setLoadingReports(true);
   setReportsError(null);
   try {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
+    const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "https://plasmida.onrender.com";
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
     const res = await fetch(`${API_URL}/api/v1/plasmida/reports`, {
