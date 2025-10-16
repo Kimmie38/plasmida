@@ -31,7 +31,7 @@ export default function HomeLogin() {
 
     try {
       // Use server-side proxy to avoid CORS issues in the browser
-      const url = '/api/proxy/auth/login';
+      const url = '/api/proxy/api/v1/plasmida/auth/login';
 
       const response = await fetch(url, {
         method: 'POST',
