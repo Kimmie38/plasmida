@@ -47,7 +47,16 @@ export default function StaffPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/proxy/api/v1/plasmida/staff`);
+      // attach client-side token from localStorage if present
+      const headers: Record<string, string> = {};
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('plasmida_token') : null;
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+      } catch (e) {
+        // ignore localStorage errors
+      }
+
+      const res = await fetch(`/api/proxy/api/v1/plasmida/staff`, { headers });
       if (!res.ok) throw new Error(`Failed to load staff: ${res.status}`);
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error("Invalid response from server");
@@ -57,7 +66,8 @@ export default function StaffPage() {
         email: item.email || "",
         dept: item.department || item.dept || "",
         unit: item.unit || "",
-        status: (item.status || "").toLowerCase(),
+        // preserve casing returned by server to match backend enum
+        status: item.status || "",
         value: formatCurrencyNaira(item.contractValue),
         date: formatDisplayDate(item.joinedDate || item.contractStartDate),
         satisfaction: typeof item.satisfaction === "number" ? item.satisfaction : (item.satisfaction ? Number(item.satisfaction) : null),
