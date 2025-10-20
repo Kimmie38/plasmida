@@ -88,8 +88,25 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Request failed with status ${res.status}`);
+        let errorMessage = `Request failed with status ${res.status}`;
+        try {
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const data = await res.json();
+            errorMessage = data?.message || JSON.stringify(data) || errorMessage;
+          } else {
+            const txt = await res.text();
+            errorMessage = txt || errorMessage;
+          }
+        } catch (parseErr) {
+          try {
+            const cloneTxt = await res.clone().text();
+            errorMessage = cloneTxt || errorMessage;
+          } catch (_) {
+            // ignore
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       // Optionally read response
