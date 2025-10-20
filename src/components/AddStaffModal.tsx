@@ -67,6 +67,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
     setLoading(true);
 
     try {
+      // Build payload WITHOUT satisfaction (backend doesn't accept it)
       const payload = {
         staffName: formData.staffName,
         department: formData.department,
@@ -78,7 +79,6 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
         contractStartDate: formData.contractStartDate || undefined,
         contractEndDate: formData.contractEndDate || undefined,
         joinedDate: formData.contractStartDate || undefined,
-        satisfaction: formData.satisfaction ? Number(formData.satisfaction) : undefined,
       };
 
       // Attach client token from localStorage if present
@@ -95,6 +95,48 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
         headers,
         body: JSON.stringify(payload),
       });
+
+      if (!res.ok) {
+        let errorMessage = `Request failed with status ${res.status}`;
+        try {
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const data = await res.json();
+            errorMessage = data?.message || JSON.stringify(data) || errorMessage;
+          } else {
+            const txt = await res.text();
+            errorMessage = txt || errorMessage;
+          }
+        } catch (parseErr) {
+          try {
+            const cloneTxt = await res.clone().text();
+            errorMessage = cloneTxt || errorMessage;
+          } catch (_) {
+            // ignore
+          }
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Save satisfaction locally (backend does not accept satisfaction)
+      if (typeof window !== 'undefined' && formData.satisfaction) {
+        try {
+          const key = 'plasmida_satisfaction';
+          const raw = localStorage.getItem(key);
+          const list = raw ? JSON.parse(raw) : [];
+          const satValue = Number(formData.satisfaction);
+          if (!isNaN(satValue)) {
+            // replace existing entry for same email if present
+            const existingIndex = list.findIndex((x: any) => x.email === payload.email);
+            const entry = { email: payload.email, staffName: payload.staffName, satisfaction: satValue };
+            if (existingIndex >= 0) list[existingIndex] = entry;
+            else list.push(entry);
+            localStorage.setItem(key, JSON.stringify(list));
+          }
+        } catch (e) {
+          // ignore localStorage errors
+        }
+      }
 
       if (!res.ok) {
         let errorMessage = `Request failed with status ${res.status}`;
