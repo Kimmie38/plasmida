@@ -47,7 +47,7 @@ export default function StaffPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(buildUrl("/api/v1/plasmida/staff"));
+      const res = await fetch(`/api/proxy/api/v1/plasmida/staff`);
       if (!res.ok) throw new Error(`Failed to load staff: ${res.status}`);
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error("Invalid response from server");
