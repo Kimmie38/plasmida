@@ -213,6 +213,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 <option>Active</option>
                 <option>Onboarding</option>
                 <option>Inactive</option>
+                <option>On Leave</option>
                 <option>Terminated</option>
               </select>
             </div>
