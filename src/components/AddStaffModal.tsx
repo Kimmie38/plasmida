@@ -13,11 +13,12 @@ export interface StaffFormData {
   contractValue: string;
   contractStartDate: string;
   contractEndDate: string;
+  satisfaction?: string;
 }
 
 interface AddStaffModalProps {
   onClose: () => void;
-  onSave?: (data: StaffFormData) => void;
+  onSave?: () => void; // notify parent to refresh
 }
 
 export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
@@ -31,7 +32,11 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
     contractValue: "",
     contractStartDate: "",
     contractEndDate: "",
+    satisfaction: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -40,11 +45,65 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const buildUrl = (path: string) => {
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+    if (base && base.endsWith("/")) return `${base.replace(/\/$/, "")}${path}`;
+    return base ? `${base}${path}` : path;
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (onSave) onSave(formData);
-    console.log("New staff saved:", formData);
-    onClose();
+    setError(null);
+
+    // Basic validation for satisfaction if provided
+    if (formData.satisfaction) {
+      const s = Number(formData.satisfaction);
+      if (isNaN(s) || s < 1.1 || s > 9.9) {
+        setError("Satisfaction must be a number between 1.1 and 9.9");
+        return;
+      }
+    }
+
+    setLoading(true);
+
+    try {
+      const payload = {
+        staffName: formData.staffName,
+        department: formData.department,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        unit: formData.unit,
+        status: formData.status,
+        contractValue: formData.contractValue ? Number(formData.contractValue) : 0,
+        contractStartDate: formData.contractStartDate || undefined,
+        contractEndDate: formData.contractEndDate || undefined,
+        joinedDate: formData.contractStartDate || undefined,
+        satisfaction: formData.satisfaction ? Number(formData.satisfaction) : undefined,
+      };
+
+      const res = await fetch(buildUrl("/api/v1/plasmida/staff/add"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Request failed with status ${res.status}`);
+      }
+
+      // Optionally read response
+      // const created = await res.json();
+
+      // Notify parent to refresh
+      if (onSave) onSave();
+
+      onClose();
+    } catch (err: any) {
+      setError(err?.message || "Failed to add staff");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -163,22 +222,41 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Satisfaction (1.1 - 9.9)</label>
+              <input
+                type="number"
+                name="satisfaction"
+                step="0.1"
+                min="1.1"
+                max="9.9"
+                value={formData.satisfaction}
+                onChange={handleChange}
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                placeholder="e.g. 4.4"
+              />
+            </div>
           </div>
+
+          {error && <div className="text-sm text-red-600">{error}</div>}
 
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
+              disabled={loading}
               className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100"
             >
               Cancel
             </button>
             <button
               type="submit"
+              disabled={loading}
               className="px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 inline-flex items-center gap-2"
             >
               <FiSave />
-              <span>Save</span>
+              <span>{loading ? "Saving..." : "Save"}</span>
             </button>
           </div>
         </form>

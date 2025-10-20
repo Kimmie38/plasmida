@@ -1,22 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AddStaffModal from "@/components/AddStaffModal";
-import type { StaffFormData } from "@/components/AddStaffModal";
 
 type StaffRow = {
   name: string;
   email: string;
   dept: string;
   unit: string;
-  status: "active" | "prospect" | "onboarding" | "inactive" | "terminated" | string;
+  status: string;
   value: string;
   date: string;
+  satisfaction?: number | null;
 };
 
-function formatCurrencyNaira(input: string) {
-  const num = Number(input);
-  if (!isFinite(num) || isNaN(num)) return input || "₦0";
+function formatCurrencyNaira(input: number | string | undefined) {
+  const num = typeof input === "string" ? Number(input.replace(/[^0-9.-]+/g, "")) : Number(input);
+  if (!isFinite(num) || isNaN(num)) return "₦0";
   return new Intl.NumberFormat("en-NG", {
     style: "currency",
     currency: "NGN",
@@ -25,40 +25,64 @@ function formatCurrencyNaira(input: string) {
 }
 
 function formatDisplayDate(input?: string) {
-  if (!input) return new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  if (!input) return "";
   const d = new Date(input);
   if (isNaN(d.getTime())) return input;
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+const buildUrl = (path: string) => {
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+  if (base && base.endsWith("/")) return `${base.replace(/\/$/, "")}${path}`;
+  return base ? `${base}${path}` : path;
+};
+
 export default function StaffPage() {
   const [showAddStaff, setShowAddStaff] = useState(false);
-  const [staff, setStaff] = useState<StaffRow[]>([
-    { name: 'Adebayo Johnson', email: 'adebayo.johnson@company.com', dept: 'Information Technology', unit: 'Software Development', status: 'active', value: '₦650,000', date: 'Jan 15, 2024' },
-    { name: 'Fatima Abubakar', email: 'fatima.abubakar@company.com', dept: 'Human Resources', unit: 'Talent Acquisition', status: 'active', value: '₦650,000', date: 'Feb 1, 2024' },
-    { name: 'Chinedu Okafor', email: 'chinedu.okafor@company.com', dept: 'Sales & Marketing', unit: 'Digital Marketing', status: 'active', value: '₦920,000', date: 'Mar 1, 2024' },
-    { name: 'Aminat Bello', email: 'aminat.bello@company.com', dept: 'Finance', unit: 'Financial Analysis', status: 'active', value: '₦750,000', date: 'Apr 15, 2024' },
-    { name: 'Emeka Nwosu', email: 'emeka.nwosu@company.com', dept: 'Operations', unit: 'Supply Chain', status: 'active', value: '₦1,200,000', date: 'May 1, 2024' },
-    { name: 'Kemi Adeyemi', email: 'kemi.adeyemi@company.com', dept: 'Customer Service', unit: 'Customer Support', status: 'prospect', value: '₦480,000', date: 'Jun 1, 2024' },
-    { name: 'Ibrahim Suleiman', email: 'ibrahim.suleiman@company.com', dept: 'Engineering', unit: 'Product Development', status: 'active', value: '₦1,050,000', date: 'Jul 15, 2024' },
-    { name: 'Grace Okoro', email: 'grace.okoro@company.com', dept: 'Legal & Compliance', unit: 'Regulatory Affairs', status: 'active', value: '₦680,000', date: 'Aug 1, 2024' },
-  ]);
+  const [staff, setStaff] = useState<StaffRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchStaff = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(buildUrl("/api/v1/plasmida/staff"));
+      if (!res.ok) throw new Error(`Failed to load staff: ${res.status}`);
+      const data = await res.json();
+      if (!Array.isArray(data)) throw new Error("Invalid response from server");
+
+      const mapped: StaffRow[] = data.map((item: any) => ({
+        name: item.staffName || item.name || "",
+        email: item.email || "",
+        dept: item.department || item.dept || "",
+        unit: item.unit || "",
+        status: (item.status || "").toLowerCase(),
+        value: formatCurrencyNaira(item.contractValue),
+        date: formatDisplayDate(item.joinedDate || item.contractStartDate),
+        satisfaction: typeof item.satisfaction === "number" ? item.satisfaction : (item.satisfaction ? Number(item.satisfaction) : null),
+      }));
+
+      setStaff(mapped);
+    } catch (err: any) {
+      setError(err?.message || "Failed to load staff");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStaff();
+  }, [fetchStaff]);
 
   const totalStaff = staff.length;
   const activeStaff = staff.filter((s) => s.status === "active").length;
-
-  const handleSave = (data: StaffFormData) => {
-    const newRow: StaffRow = {
-      name: data.staffName,
-      email: data.email || "",
-      dept: data.department,
-      unit: data.unit,
-      status: (data.status || "prospect").toLowerCase(),
-      value: data.contractValue ? formatCurrencyNaira(data.contractValue) : "₦0",
-      date: formatDisplayDate(data.contractStartDate),
-    };
-    setStaff((prev) => [newRow, ...prev]);
-  };
+  const avgSatisfaction = (() => {
+    const vals = staff.map((s) => s.satisfaction).filter((v): v is number => typeof v === "number" && !isNaN(v));
+    if (vals.length === 0) return null;
+    const sum = vals.reduce((a, b) => a + b, 0);
+    return Math.round((sum / vals.length) * 10) / 10;
+  })();
 
   return (
     <div className="staff-page p-8 bg-gray-50 min-h-screen">
@@ -89,54 +113,60 @@ export default function StaffPage() {
 
         <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
           <div className="text-sm text-gray-700">Avg. Satisfaction</div>
-          <div className="text-xl font-semibold text-black mt-2">4.4</div>
+          <div className="text-xl font-semibold text-black mt-2">{avgSatisfaction !== null ? avgSatisfaction : '—'}</div>
         </div>
       </section>
 
       <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-gray-700">
-              <th className="py-3 px-4">Staff Name</th>
-              <th className="py-3 px-4">Department</th>
-              <th className="py-3 px-4">Unit</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4">Contract Value</th>
-              <th className="py-3 px-4">Joined Date</th>
-              <th className="py-3 px-4">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {staff.map((s) => (
-              <tr key={(s.email || s.name)} className="border-t border-gray-200">
-                <td className="py-3 px-4">
-                  <div className="font-medium text-gray-800">{s.name}</div>
-                  <div className="text-xs text-gray-700">{s.email}</div>
-                </td>
-                <td className="py-3 px-4 text-gray-800">{s.dept}</td>
-                <td className="py-3 px-4 text-gray-800">{s.unit}</td>
-                <td className="py-3 px-4">
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs ${
-                      s.status === "active"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {s.status}
-                  </span>
-                </td>
-                <td className="py-3 px-4 text-gray-800">{s.value}</td>
-                <td className="py-3 px-4 text-gray-800">{s.date}</td>
-                <td className="py-3 px-4 text-gray-800">•••</td>
+        {loading ? (
+          <div className="py-12 text-center text-sm text-gray-600">Loading staff...</div>
+        ) : error ? (
+          <div className="py-12 text-center text-sm text-red-600">{error}</div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-700">
+                <th className="py-3 px-4">Staff Name</th>
+                <th className="py-3 px-4">Department</th>
+                <th className="py-3 px-4">Unit</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Contract Value</th>
+                <th className="py-3 px-4">Joined Date</th>
+                <th className="py-3 px-4">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {staff.map((s) => (
+                <tr key={(s.email || s.name)} className="border-t border-gray-200">
+                  <td className="py-3 px-4">
+                    <div className="font-medium text-gray-800">{s.name}</div>
+                    <div className="text-xs text-gray-700">{s.email}</div>
+                  </td>
+                  <td className="py-3 px-4 text-gray-800">{s.dept}</td>
+                  <td className="py-3 px-4 text-gray-800">{s.unit}</td>
+                  <td className="py-3 px-4">
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs ${
+                        s.status === "active"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {s.status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-gray-800">{s.value}</td>
+                  <td className="py-3 px-4 text-gray-800">{s.date}</td>
+                  <td className="py-3 px-4 text-gray-800">•••</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
 
       {showAddStaff && (
-        <AddStaffModal onClose={() => setShowAddStaff(false)} onSave={handleSave} />
+        <AddStaffModal onClose={() => setShowAddStaff(false)} onSave={() => fetchStaff()} />
       )}
     </div>
   );
