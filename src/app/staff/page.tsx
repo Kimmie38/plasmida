@@ -1,13 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { FiUser, FiBriefcase } from "react-icons/fi";
 import AddStaffModal from "@/components/AddStaffModal";
+import type { StaffFormData } from "@/components/AddStaffModal";
+
+type StaffRow = {
+  name: string;
+  email: string;
+  dept: string;
+  unit: string;
+  status: "active" | "prospect" | "onboarding" | "inactive" | "terminated" | string;
+  value: string;
+  date: string;
+};
+
+function formatCurrencyNaira(input: string) {
+  const num = Number(input);
+  if (!isFinite(num) || isNaN(num)) return input || "₦0";
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 0,
+  }).format(num);
+}
+
+function formatDisplayDate(input?: string) {
+  if (!input) return new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const d = new Date(input);
+  if (isNaN(d.getTime())) return input;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
 export default function StaffPage() {
   const [showAddStaff, setShowAddStaff] = useState(false);
-
-  const staff = [
+  const [staff, setStaff] = useState<StaffRow[]>([
     { name: 'Adebayo Johnson', email: 'adebayo.johnson@company.com', dept: 'Information Technology', unit: 'Software Development', status: 'active', value: '₦650,000', date: 'Jan 15, 2024' },
     { name: 'Fatima Abubakar', email: 'fatima.abubakar@company.com', dept: 'Human Resources', unit: 'Talent Acquisition', status: 'active', value: '₦650,000', date: 'Feb 1, 2024' },
     { name: 'Chinedu Okafor', email: 'chinedu.okafor@company.com', dept: 'Sales & Marketing', unit: 'Digital Marketing', status: 'active', value: '₦920,000', date: 'Mar 1, 2024' },
@@ -16,7 +42,23 @@ export default function StaffPage() {
     { name: 'Kemi Adeyemi', email: 'kemi.adeyemi@company.com', dept: 'Customer Service', unit: 'Customer Support', status: 'prospect', value: '₦480,000', date: 'Jun 1, 2024' },
     { name: 'Ibrahim Suleiman', email: 'ibrahim.suleiman@company.com', dept: 'Engineering', unit: 'Product Development', status: 'active', value: '₦1,050,000', date: 'Jul 15, 2024' },
     { name: 'Grace Okoro', email: 'grace.okoro@company.com', dept: 'Legal & Compliance', unit: 'Regulatory Affairs', status: 'active', value: '₦680,000', date: 'Aug 1, 2024' },
-  ];
+  ]);
+
+  const totalStaff = staff.length;
+  const activeStaff = staff.filter((s) => s.status === "active").length;
+
+  const handleSave = (data: StaffFormData) => {
+    const newRow: StaffRow = {
+      name: data.staffName,
+      email: data.email || "",
+      dept: data.department,
+      unit: data.unit,
+      status: (data.status || "prospect").toLowerCase(),
+      value: data.contractValue ? formatCurrencyNaira(data.contractValue) : "₦0",
+      date: formatDisplayDate(data.contractStartDate),
+    };
+    setStaff((prev) => [newRow, ...prev]);
+  };
 
   return (
     <div className="staff-page p-8 bg-gray-50 min-h-screen">
@@ -37,12 +79,12 @@ export default function StaffPage() {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
           <div className="text-sm text-gray-700">Total Staff</div>
-          <div className="text-xl font-semibold text-black mt-2">8</div>
+          <div className="text-xl font-semibold text-black mt-2">{totalStaff}</div>
         </div>
 
         <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
           <div className="text-sm text-gray-700">Active Staff</div>
-          <div className="text-xl font-semibold text-black mt-2">7</div>
+          <div className="text-xl font-semibold text-black mt-2">{activeStaff}</div>
         </div>
 
         <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
@@ -66,7 +108,7 @@ export default function StaffPage() {
           </thead>
           <tbody>
             {staff.map((s) => (
-              <tr key={s.email} className="border-t border-gray-200">
+              <tr key={(s.email || s.name)} className="border-t border-gray-200">
                 <td className="py-3 px-4">
                   <div className="font-medium text-gray-800">{s.name}</div>
                   <div className="text-xs text-gray-700">{s.email}</div>
@@ -94,7 +136,7 @@ export default function StaffPage() {
       </section>
 
       {showAddStaff && (
-        <AddStaffModal onClose={() => setShowAddStaff(false)} />
+        <AddStaffModal onClose={() => setShowAddStaff(false)} onSave={handleSave} />
       )}
     </div>
   );
