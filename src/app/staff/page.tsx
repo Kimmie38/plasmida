@@ -157,7 +157,7 @@ export default function StaffPage() {
                   <td className="py-3 px-4">
                     <span
                       className={`inline-block px-3 py-1 rounded-full text-xs ${
-                        s.status === "active"
+                        (s.status || '').toLowerCase() === "active"
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-gray-100 text-gray-700"
                       }`}
