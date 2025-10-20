@@ -13,11 +13,12 @@ export interface StaffFormData {
   contractValue: string;
   contractStartDate: string;
   contractEndDate: string;
+  satisfaction?: string;
 }
 
 interface AddStaffModalProps {
   onClose: () => void;
-  onSave?: (data: StaffFormData) => void;
+  onSave?: () => void; // notify parent to refresh
 }
 
 export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
@@ -31,7 +32,11 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
     contractValue: "",
     contractStartDate: "",
     contractEndDate: "",
+    satisfaction: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -40,11 +45,133 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const buildUrl = (path: string) => {
+    const base = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+    if (base && base.endsWith("/")) return `${base.replace(/\/$/, "")}${path}`;
+    return base ? `${base}${path}` : path;
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (onSave) onSave(formData);
-    console.log("New staff saved:", formData);
-    onClose();
+    setError(null);
+
+    // Basic validation for satisfaction if provided
+    if (formData.satisfaction) {
+      const s = Number(formData.satisfaction);
+      if (isNaN(s) || s < 1.1 || s > 9.9) {
+        setError("Satisfaction must be a number between 1.1 and 9.9");
+        return;
+      }
+    }
+
+    setLoading(true);
+
+    try {
+      // Build payload WITHOUT satisfaction (backend doesn't accept it)
+      const payload = {
+        staffName: formData.staffName,
+        department: formData.department,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        unit: formData.unit,
+        status: formData.status,
+        contractValue: formData.contractValue ? Number(formData.contractValue) : 0,
+        contractStartDate: formData.contractStartDate || undefined,
+        contractEndDate: formData.contractEndDate || undefined,
+        joinedDate: formData.contractStartDate || undefined,
+      };
+
+      // Attach client token from localStorage if present
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('plasmida_token') : null;
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+      } catch (e) {
+        // ignore
+      }
+
+      const res = await fetch(`/api/proxy/api/v1/plasmida/staff/add`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        let errorMessage = `Request failed with status ${res.status}`;
+        try {
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const data = await res.json();
+            errorMessage = data?.message || JSON.stringify(data) || errorMessage;
+          } else {
+            const txt = await res.text();
+            errorMessage = txt || errorMessage;
+          }
+        } catch (parseErr) {
+          try {
+            const cloneTxt = await res.clone().text();
+            errorMessage = cloneTxt || errorMessage;
+          } catch (_) {
+            // ignore
+          }
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Save satisfaction locally (backend does not accept satisfaction)
+      if (typeof window !== 'undefined' && formData.satisfaction) {
+        try {
+          const key = 'plasmida_satisfaction';
+          const raw = localStorage.getItem(key);
+          const list = raw ? JSON.parse(raw) : [];
+          const satValue = Number(formData.satisfaction);
+          if (!isNaN(satValue)) {
+            // replace existing entry for same email if present
+            const existingIndex = list.findIndex((x: any) => x.email === payload.email);
+            const entry = { email: payload.email, staffName: payload.staffName, satisfaction: satValue };
+            if (existingIndex >= 0) list[existingIndex] = entry;
+            else list.push(entry);
+            localStorage.setItem(key, JSON.stringify(list));
+          }
+        } catch (e) {
+          // ignore localStorage errors
+        }
+      }
+
+      if (!res.ok) {
+        let errorMessage = `Request failed with status ${res.status}`;
+        try {
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const data = await res.json();
+            errorMessage = data?.message || JSON.stringify(data) || errorMessage;
+          } else {
+            const txt = await res.text();
+            errorMessage = txt || errorMessage;
+          }
+        } catch (parseErr) {
+          try {
+            const cloneTxt = await res.clone().text();
+            errorMessage = cloneTxt || errorMessage;
+          } catch (_) {
+            // ignore
+          }
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Optionally read response
+      // const created = await res.json();
+
+      // Notify parent to refresh
+      if (onSave) onSave();
+
+      onClose();
+    } catch (err: any) {
+      setError(err?.message || "Failed to add staff");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -128,6 +255,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 <option>Active</option>
                 <option>Onboarding</option>
                 <option>Inactive</option>
+                <option>On Leave</option>
                 <option>Terminated</option>
               </select>
             </div>
@@ -163,22 +291,41 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
                 className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Satisfaction (1.1 - 9.9)</label>
+              <input
+                type="number"
+                name="satisfaction"
+                step="0.1"
+                min="1.1"
+                max="9.9"
+                value={formData.satisfaction}
+                onChange={handleChange}
+                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                placeholder="e.g. 4.4"
+              />
+            </div>
           </div>
+
+          {error && <div className="text-sm text-red-600">{error}</div>}
 
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
+              disabled={loading}
               className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100"
             >
               Cancel
             </button>
             <button
               type="submit"
+              disabled={loading}
               className="px-4 py-2 rounded-md bg-sky-600 text-white hover:bg-sky-700 inline-flex items-center gap-2"
             >
               <FiSave />
-              <span>Save</span>
+              <span>{loading ? "Saving..." : "Save"}</span>
             </button>
           </div>
         </form>
