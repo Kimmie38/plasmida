@@ -25,6 +25,7 @@ type ReportCard = {
   contact: string;
   attendees: string;
   location: string;
+  category: string;
   tags: string[];
   status: "completed" | "draft" | string;
   size: string;
@@ -87,23 +88,37 @@ export default function RepositoryPage() {
   const [loadingReports, setLoadingReports] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
 
-  const mapServerToReport = (item: any): ReportCard => ({
-    id: item.id || item._id || Math.random(),
-    title: item.reportTitle || item.title || item.name || "Untitled",
-    fileName: item.fileName || item.originalName || item.file?.name || "file",
-    description: item.projectDescription || item.description || item.summary || "",
-    org: item.clientCompany || item.org || item.company || "",
-    price: item.projectCost || item.price || "",
-    date: item.trainingStartDate || item.date || item.uploadedDate || "",
-    duration: item.duration ? `${item.duration} days` : item.durationDays ? `${item.durationDays} days` : item.duration || "",
-    contact: item.instructor || item.contact || "",
-    attendees: item.participants || item.attendees || "",
-    location: item.trainingLocation || item.location || "",
-    tags: Array.isArray(item.tags) ? item.tags : (typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : []),
-    status: item.projectStatus || item.status || "",
-    size: item.size || (item.file && item.file.size ? `${(item.file.size / (1024*1024)).toFixed(2)} MB` : ""),
-    uploaded: item.uploaded || item.uploadedAt || item.projectCompletionDate || "",
-  });
+  const mapServerToReport = (item: any): ReportCard => {
+    const rawTags = Array.isArray(item.tags)
+      ? item.tags
+      : (typeof item.tags === 'string' ? JSON.parse(item.tags || '[]') : []);
+    const category = item.trainingCategory || item.category || item.trainingType || "";
+
+    const tagsSet = rawTags.slice();
+    if (category) {
+      const hasCategoryTag = rawTags.some((t: string) => String(t).toLowerCase() === String(category).toLowerCase());
+      if (!hasCategoryTag) tagsSet.unshift(category);
+    }
+
+    return {
+      id: item.id || item._id || Math.random(),
+      title: item.reportTitle || item.title || item.name || "Untitled",
+      fileName: item.fileName || item.originalName || item.file?.name || "file",
+      description: item.projectDescription || item.description || item.summary || "",
+      org: item.clientCompany || item.org || item.company || "",
+      price: item.projectCost || item.price || "",
+      date: item.trainingStartDate || item.date || item.uploadedDate || "",
+      duration: item.duration ? `${item.duration} days` : item.durationDays ? `${item.durationDays} days` : item.duration || "",
+      contact: item.instructor || item.contact || "",
+      attendees: item.participants || item.attendees || "",
+      location: item.trainingLocation || item.location || "",
+      category,
+      tags: tagsSet,
+      status: item.projectStatus || item.status || "",
+      size: item.size || (item.file && item.file.size ? `${(item.file.size / (1024*1024)).toFixed(2)} MB` : ""),
+      uploaded: item.uploaded || item.uploadedAt || item.projectCompletionDate || "",
+    };
+  };
 
  const fetchReports = async () => {
   setLoadingReports(true);
@@ -191,8 +206,10 @@ export default function RepositoryPage() {
         const categoryMatch =
           cat === "All Categories" ||
           (cat === "Others"
-            ? !card.tags.some((t) => CATEGORIES.map((c) => c.toLowerCase()).includes(t.toLowerCase()))
-            : card.tags.some((t) => t.toLowerCase() === (cat || "").toLowerCase()));
+            ? ((!(card.category)) || !CATEGORIES.map((c) => c.toLowerCase()).includes((card.category || "").toLowerCase())) &&
+              !card.tags.some((t) => CATEGORIES.map((c) => c.toLowerCase()).includes(t.toLowerCase()))
+            : (card.category && card.category.toLowerCase() === (cat || "").toLowerCase()) ||
+              card.tags.some((t) => t.toLowerCase() === (cat || "").toLowerCase()));
 
         const fileType = getFileType(card.fileName);
         const typeMatch = type === "All Types" || fileType.toLowerCase() === type.toLowerCase();
@@ -318,7 +335,11 @@ export default function RepositoryPage() {
                     <div className="flex items-start justify-between gap-3">
                       <h3 className="text-md font-semibold text-slate-800">{c.title}</h3>
                       <div className="flex flex-col items-end gap-2">
-                        <span className={`${categoryColor(c.tags[0])} rounded-full px-2 py-1 text-xs font-medium`}>{c.tags[0]}</span>
+                        {(c.category || c.tags[0]) && (
+                          <span className={`${categoryColor(c.category || c.tags[0] || "")} rounded-full px-2 py-1 text-xs font-medium`}>
+                            {c.category || c.tags[0]}
+                          </span>
+                        )}
                         <span className={`${statusColor(c.status)} rounded-full px-2 py-1 text-xs font-medium`}>{c.status}</span>
                       </div>
                     </div>
@@ -406,7 +427,11 @@ export default function RepositoryPage() {
                   <div className="flex items-start justify-between gap-3">
                     <h3 className="text-md font-semibold text-slate-800">{c.title}</h3>
                     <div className="flex flex-col items-end gap-2">
-                      <span className={`${categoryColor(c.tags[0])} rounded-full px-2 py-1 text-xs font-medium`}>{c.tags[0]}</span>
+                      {(c.category || c.tags[0]) && (
+                        <span className={`${categoryColor(c.category || c.tags[0] || "")} rounded-full px-2 py-1 text-xs font-medium`}>
+                          {c.category || c.tags[0]}
+                        </span>
+                      )}
                       <span className={`${statusColor(c.status)} rounded-full px-2 py-1 text-xs font-medium`}>{c.status}</span>
                     </div>
                   </div>
