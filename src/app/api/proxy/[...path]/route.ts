@@ -57,11 +57,22 @@ async function proxyRequest(req: Request) {
       // ignore env read errors
     }
 
+    // Read request body (if any) and forward as ArrayBuffer - avoids passing the stream directly which can throw
+    let forwardBody: ArrayBuffer | undefined;
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      try {
+        forwardBody = await req.arrayBuffer();
+      } catch (e) {
+        // If body can't be read, continue without body
+        forwardBody = undefined;
+      }
+    }
+
     // Perform the fetch to backend
     const backendRes = await fetch(targetUrl, {
       method: req.method,
       headers: outHeaders as any,
-      body: req.method === 'GET' || req.method === 'HEAD' ? undefined : req.body,
+      body: forwardBody && forwardBody.byteLength ? forwardBody : undefined,
       redirect: 'manual',
     });
 
