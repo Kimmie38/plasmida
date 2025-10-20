@@ -81,9 +81,18 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
         satisfaction: formData.satisfaction ? Number(formData.satisfaction) : undefined,
       };
 
+      // Attach client token from localStorage if present
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('plasmida_token') : null;
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+      } catch (e) {
+        // ignore
+      }
+
       const res = await fetch(`/api/proxy/api/v1/plasmida/staff/add`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(payload),
       });
 
