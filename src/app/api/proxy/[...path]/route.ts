@@ -44,6 +44,19 @@ async function proxyRequest(req: Request) {
       outHeaders[key] = value;
     });
 
+    // Inject server-side auth if configured (do NOT expose tokens to client)
+    // Supports setting API_AUTH_HEADER_NAME (e.g. Authorization) and API_AUTH_TOKEN on the server environment.
+    try {
+      const authHeaderName = process.env.API_AUTH_HEADER_NAME;
+      const authToken = process.env.API_AUTH_TOKEN;
+      const authBearer = process.env.API_AUTH_BEARER === 'true';
+      if (authHeaderName && authToken) {
+        outHeaders[authHeaderName] = authBearer ? `Bearer ${authToken}` : authToken;
+      }
+    } catch (e) {
+      // ignore env read errors
+    }
+
     // Perform the fetch to backend
     const backendRes = await fetch(targetUrl, {
       method: req.method,
