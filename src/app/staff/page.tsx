@@ -61,17 +61,33 @@ export default function StaffPage() {
       const data = await res.json();
       if (!Array.isArray(data)) throw new Error("Invalid response from server");
 
-      const mapped: StaffRow[] = data.map((item: any) => ({
-        name: item.staffName || item.name || "",
-        email: item.email || "",
-        dept: item.department || item.dept || "",
-        unit: item.unit || "",
-        // preserve casing returned by server to match backend enum
-        status: item.status || "",
-        value: formatCurrencyNaira(item.contractValue),
-        date: formatDisplayDate(item.joinedDate || item.contractStartDate),
-        satisfaction: typeof item.satisfaction === "number" ? item.satisfaction : (item.satisfaction ? Number(item.satisfaction) : null),
-      }));
+      // Load local satisfaction overrides
+      let localSats: { email?: string; staffName?: string; satisfaction: number }[] = [];
+      try {
+        if (typeof window !== 'undefined') {
+          const raw = localStorage.getItem('plasmida_satisfaction');
+          if (raw) localSats = JSON.parse(raw);
+        }
+      } catch (e) {
+        localSats = [];
+      }
+
+      const mapped: StaffRow[] = data.map((item: any) => {
+        const email = item.email || "";
+        const local = localSats.find((l) => l.email === email || l.staffName === (item.staffName || item.name));
+        const sat = local ? local.satisfaction : (typeof item.satisfaction === "number" ? item.satisfaction : (item.satisfaction ? Number(item.satisfaction) : null));
+        return {
+          name: item.staffName || item.name || "",
+          email,
+          dept: item.department || item.dept || "",
+          unit: item.unit || "",
+          // preserve casing returned by server to match backend enum
+          status: item.status || "",
+          value: formatCurrencyNaira(item.contractValue),
+          date: formatDisplayDate(item.joinedDate || item.contractStartDate),
+          satisfaction: typeof sat === 'number' && !isNaN(sat) ? sat : null,
+        };
+      });
 
       setStaff(mapped);
     } catch (err: any) {
