@@ -81,7 +81,7 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
         satisfaction: formData.satisfaction ? Number(formData.satisfaction) : undefined,
       };
 
-      const res = await fetch(buildUrl("/api/v1/plasmida/staff/add"), {
+      const res = await fetch(`/api/proxy/api/v1/plasmida/staff/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
