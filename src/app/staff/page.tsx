@@ -86,7 +86,7 @@ export default function StaffPage() {
   }, [fetchStaff]);
 
   const totalStaff = staff.length;
-  const activeStaff = staff.filter((s) => s.status === "active").length;
+  const activeStaff = staff.filter((s) => (s.status || '').toLowerCase() === "active").length;
   const avgSatisfaction = (() => {
     const vals = staff.map((s) => s.satisfaction).filter((v): v is number => typeof v === "number" && !isNaN(v));
     if (vals.length === 0) return null;
