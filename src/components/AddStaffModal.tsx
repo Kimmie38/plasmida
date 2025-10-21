@@ -18,7 +18,7 @@ export interface StaffFormData {
 
 interface AddStaffModalProps {
   onClose: () => void;
-  onSave?: () => void; // notify parent to refresh
+  onSave?: () => void; // Optional callback to refresh parent list
 }
 
 export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
@@ -45,29 +45,12 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const buildUrl = (path: string) => {
-    const base = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-    if (base && base.endsWith("/")) return `${base.replace(/\/$/, "")}${path}`;
-    return base ? `${base}${path}` : path;
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // Basic validation for satisfaction if provided
-    if (formData.satisfaction) {
-      const s = Number(formData.satisfaction);
-      if (isNaN(s) || s < 1.1 || s > 9.9) {
-        setError("Satisfaction must be a number between 1.1 and 9.9");
-        return;
-      }
-    }
-
     setLoading(true);
 
     try {
-      // Build payload WITHOUT satisfaction (backend doesn't accept it)
       const payload = {
         staffName: formData.staffName,
         department: formData.department,
@@ -75,100 +58,71 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
         phoneNumber: formData.phone,
         unit: formData.unit,
         status: formData.status,
-        contractValue: formData.contractValue ? Number(formData.contractValue) : 0,
-        contractStartDate: formData.contractStartDate || undefined,
-        contractEndDate: formData.contractEndDate || undefined,
-        joinedDate: formData.contractStartDate || undefined,
+        contractValue: Number(formData.contractValue) || 0,
+        contractStartDate: formData.contractStartDate || null,
+        contractEndDate: formData.contractEndDate || null,
+        joinedDate: formData.contractStartDate || null,
       };
 
-      // Attach client token from localStorage if present
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('plasmida_token') : null;
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-      } catch (e) {
-        // ignore
-      }
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("token")
+          : null;
 
-      const res = await fetch(`/api/proxy/api/v1/plasmida/staff/add`, {
-        method: "POST",
-        headers,
+      const base =
+        process.env.NEXT_PUBLIC_API_BASE_URL;
+
+      const res = await fetch(`${base}/api/v1/plasmida/staff/add`, {
+        method: "POST", // ✅ Correct method
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
 
+      // Check response
       if (!res.ok) {
+        const contentType = res.headers.get("content-type");
         let errorMessage = `Request failed with status ${res.status}`;
-        try {
-          const contentType = res.headers.get("content-type") || "";
-          if (contentType.includes("application/json")) {
-            const data = await res.json();
-            errorMessage = data?.message || JSON.stringify(data) || errorMessage;
-          } else {
-            const txt = await res.text();
-            errorMessage = txt || errorMessage;
-          }
-        } catch (parseErr) {
-          try {
-            const cloneTxt = await res.clone().text();
-            errorMessage = cloneTxt || errorMessage;
-          } catch (_) {
-            // ignore
-          }
+
+        if (contentType?.includes("application/json")) {
+          const data = await res.json();
+          errorMessage = data.message || JSON.stringify(data);
+        } else {
+          const text = await res.text();
+          errorMessage = text || errorMessage;
         }
+
         throw new Error(errorMessage);
       }
 
-      // Save satisfaction locally (backend does not accept satisfaction)
-      if (typeof window !== 'undefined' && formData.satisfaction) {
-        try {
-          const key = 'plasmida_satisfaction';
-          const raw = localStorage.getItem(key);
-          const list = raw ? JSON.parse(raw) : [];
-          const satValue = Number(formData.satisfaction);
-          if (!isNaN(satValue)) {
-            // replace existing entry for same email if present
-            const existingIndex = list.findIndex((x: any) => x.email === payload.email);
-            const entry = { email: payload.email, staffName: payload.staffName, satisfaction: satValue };
-            if (existingIndex >= 0) list[existingIndex] = entry;
-            else list.push(entry);
-            localStorage.setItem(key, JSON.stringify(list));
-          }
-        } catch (e) {
-          // ignore localStorage errors
-        }
+      // Success
+      const data = await res.json();
+      console.log("✅ Staff added:", data);
+
+      // Save satisfaction locally (since backend doesn’t accept it)
+      if (formData.satisfaction && typeof window !== "undefined") {
+        const key = "plasmida_satisfaction";
+        const raw = localStorage.getItem(key);
+        const list = raw ? JSON.parse(raw) : [];
+        const satValue = Number(formData.satisfaction);
+        const entry = {
+          email: formData.email,
+          staffName: formData.staffName,
+          satisfaction: satValue,
+        };
+        const index = list.findIndex((x: any) => x.email === formData.email);
+        if (index >= 0) list[index] = entry;
+        else list.push(entry);
+        localStorage.setItem(key, JSON.stringify(list));
       }
 
-      if (!res.ok) {
-        let errorMessage = `Request failed with status ${res.status}`;
-        try {
-          const contentType = res.headers.get("content-type") || "";
-          if (contentType.includes("application/json")) {
-            const data = await res.json();
-            errorMessage = data?.message || JSON.stringify(data) || errorMessage;
-          } else {
-            const txt = await res.text();
-            errorMessage = txt || errorMessage;
-          }
-        } catch (parseErr) {
-          try {
-            const cloneTxt = await res.clone().text();
-            errorMessage = cloneTxt || errorMessage;
-          } catch (_) {
-            // ignore
-          }
-        }
-        throw new Error(errorMessage);
-      }
-
-      // Optionally read response
-      // const created = await res.json();
-
-      // Notify parent to refresh
       if (onSave) onSave();
-
       onClose();
     } catch (err: any) {
-      setError(err?.message || "Failed to add staff");
+      console.error("❌ Error adding staff:", err);
+      setError(err.message || "Failed to add staff");
     } finally {
       setLoading(false);
     }
@@ -187,130 +141,99 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
 
         <header className="mb-6">
           <h2 className="text-xl font-semibold text-slate-900">Add New Staff</h2>
-          <p className="text-sm text-slate-600 mt-1">Fill in the details for the staff member below.</p>
+          <p className="text-sm text-slate-600 mt-1">
+            Fill in the staff details below.
+          </p>
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Form fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Staff Name *</label>
-              <input
-                name="staffName"
-                value={formData.staffName}
-                onChange={handleChange}
-                required
-                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Department *</label>
-              <input
-                name="department"
-                value={formData.department}
-                onChange={handleChange}
-                required
-                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Unit</label>
-              <input
-                name="unit"
-                value={formData.unit}
-                onChange={handleChange}
-                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              >
-                <option>Prospect</option>
-                <option>Active</option>
-                <option>Onboarding</option>
-                <option>Inactive</option>
-                <option>On Leave</option>
-                <option>Terminated</option>
-              </select>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Contract Value (₦)</label>
-              <input
-                type="number"
-                name="contractValue"
-                value={formData.contractValue}
-                onChange={handleChange}
-                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Contract Start Date</label>
-              <input
-                type="date"
-                name="contractStartDate"
-                value={formData.contractStartDate}
-                onChange={handleChange}
-                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Contract End Date</label>
-              <input
-                type="date"
-                name="contractEndDate"
-                value={formData.contractEndDate}
-                onChange={handleChange}
-                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Satisfaction (1.1 - 9.9)</label>
-              <input
-                type="number"
-                name="satisfaction"
-                step="0.1"
-                min="1.1"
-                max="9.9"
-                value={formData.satisfaction}
-                onChange={handleChange}
-                className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                placeholder="e.g. 4.4"
-              />
-            </div>
+            <InputField
+              label="Staff Name *"
+              name="staffName"
+              value={formData.staffName}
+              onChange={handleChange}
+              required
+            />
+            <InputField
+              label="Department *"
+              name="department"
+              value={formData.department}
+              onChange={handleChange}
+              required
+            />
+            <InputField
+              label="Email Address"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Phone Number"
+              name="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Unit"
+              name="unit"
+              value={formData.unit}
+              onChange={handleChange}
+            />
+            <SelectField
+              label="Status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              options={[
+                "Prospect",
+                "Active",
+                "Onboarding",
+                "Inactive",
+                "On Leave",
+                "Terminated",
+              ]}
+            />
+            <InputField
+              label="Contract Value (₦)"
+              name="contractValue"
+              type="number"
+              value={formData.contractValue}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Contract Start Date"
+              name="contractStartDate"
+              type="date"
+              value={formData.contractStartDate}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Contract End Date"
+              name="contractEndDate"
+              type="date"
+              value={formData.contractEndDate}
+              onChange={handleChange}
+            />
+            <InputField
+              label="Satisfaction (1.1 - 9.9)"
+              name="satisfaction"
+              type="number"
+              step="0.1"
+              min="1.1"
+              max="9.9"
+              value={formData.satisfaction}
+              onChange={handleChange}
+              placeholder="e.g. 4.4"
+            />
           </div>
 
-          {error && <div className="text-sm text-red-600">{error}</div>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-3 pt-3">
             <button
               type="button"
               onClick={onClose}
@@ -330,6 +253,47 @@ export default function AddStaffModal({ onClose, onSave }: AddStaffModalProps) {
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+function InputField({
+  label,
+  name,
+  type = "text",
+  ...props
+}: any) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1">
+        {label}
+      </label>
+      <input
+        name={name}
+        type={type}
+        {...props}
+        className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+      />
+    </div>
+  );
+}
+
+function SelectField({ label, name, value, onChange, options }: any) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1">
+        {label}
+      </label>
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full text-gray-600 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"
+      >
+        {options.map((opt: string) => (
+          <option key={opt}>{opt}</option>
+        ))}
+      </select>
     </div>
   );
 }

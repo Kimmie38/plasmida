@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import AddStaffModal from "@/components/AddStaffModal";
+import { safeFetch } from "@/utils/safeFetch";
+import { API_URL } from "@/config";
 
 type StaffRow = {
   name: string;
@@ -15,7 +17,8 @@ type StaffRow = {
 };
 
 function formatCurrencyNaira(input: number | string | undefined) {
-  const num = typeof input === "string" ? Number(input.replace(/[^0-9.-]+/g, "")) : Number(input);
+  const num =
+    typeof input === "string" ? Number(input.replace(/[^0-9.-]+/g, "")) : Number(input);
   if (!isFinite(num) || isNaN(num)) return "₦0";
   return new Intl.NumberFormat("en-NG", {
     style: "currency",
@@ -28,14 +31,12 @@ function formatDisplayDate(input?: string) {
   if (!input) return "";
   const d = new Date(input);
   if (isNaN(d.getTime())) return input;
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
-
-const buildUrl = (path: string) => {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-  if (base && base.endsWith("/")) return `${base.replace(/\/$/, "")}${path}`;
-  return base ? `${base}${path}` : path;
-};
 
 export default function StaffPage() {
   const [showAddStaff, setShowAddStaff] = useState(false);
@@ -43,55 +44,70 @@ export default function StaffPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ✅ Fetch staff data
   const fetchStaff = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
-      // attach client-side token from localStorage if present
-      const headers: Record<string, string> = {};
-      try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('plasmida_token') : null;
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-      } catch (e) {
-        // ignore localStorage errors
-      }
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) throw new Error("No token found. Please log in again.");
 
-      const res = await fetch(`/api/proxy/api/v1/plasmida/staff`, { headers });
-      if (!res.ok) throw new Error(`Failed to load staff: ${res.status}`);
+      console.log("📡 Fetching staff from:", `${API_URL}/api/v1/plasmida/staff`);
+
+      const res = await safeFetch(`${API_URL}/api/v1/plasmida/staff`, {
+        method: "GET", // ✅ Explicitly use GET
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       const data = await res.json();
-      if (!Array.isArray(data)) throw new Error("Invalid response from server");
+      if (!res.ok) throw new Error(data.message || "Failed to load staff");
 
-      // Load local satisfaction overrides
+      // ✅ Validate and map staff
+      if (!Array.isArray(data.data)) throw new Error("Invalid response format");
+
       let localSats: { email?: string; staffName?: string; satisfaction: number }[] = [];
       try {
-        if (typeof window !== 'undefined') {
-          const raw = localStorage.getItem('plasmida_satisfaction');
+        if (typeof window !== "undefined") {
+          const raw = localStorage.getItem("plasmida_satisfaction");
           if (raw) localSats = JSON.parse(raw);
         }
-      } catch (e) {
+      } catch {
         localSats = [];
       }
 
-      const mapped: StaffRow[] = data.map((item: any) => {
+      const mapped: StaffRow[] = data.data.map((item: any) => {
         const email = item.email || "";
-        const local = localSats.find((l) => l.email === email || l.staffName === (item.staffName || item.name));
-        const sat = local ? local.satisfaction : (typeof item.satisfaction === "number" ? item.satisfaction : (item.satisfaction ? Number(item.satisfaction) : null));
+        const local = localSats.find(
+          (l) => l.email === email || l.staffName === (item.staffName || item.name)
+        );
+        const sat = local
+          ? local.satisfaction
+          : typeof item.satisfaction === "number"
+          ? item.satisfaction
+          : item.satisfaction
+          ? Number(item.satisfaction)
+          : null;
+
         return {
           name: item.staffName || item.name || "",
           email,
           dept: item.department || item.dept || "",
           unit: item.unit || "",
-          // preserve casing returned by server to match backend enum
           status: item.status || "",
           value: formatCurrencyNaira(item.contractValue),
           date: formatDisplayDate(item.joinedDate || item.contractStartDate),
-          satisfaction: typeof sat === 'number' && !isNaN(sat) ? sat : null,
+          satisfaction: typeof sat === "number" && !isNaN(sat) ? sat : null,
         };
       });
 
       setStaff(mapped);
     } catch (err: any) {
-      setError(err?.message || "Failed to load staff");
+      console.error("❌ Error fetching staff:", err);
+      setError(err.message || "Failed to load staff");
     } finally {
       setLoading(false);
     }
@@ -102,9 +118,11 @@ export default function StaffPage() {
   }, [fetchStaff]);
 
   const totalStaff = staff.length;
-  const activeStaff = staff.filter((s) => (s.status || '').toLowerCase() === "active").length;
+  const activeStaff = staff.filter((s) => (s.status || "").toLowerCase() === "active").length;
   const avgSatisfaction = (() => {
-    const vals = staff.map((s) => s.satisfaction).filter((v): v is number => typeof v === "number" && !isNaN(v));
+    const vals = staff
+      .map((s) => s.satisfaction)
+      .filter((v): v is number => typeof v === "number" && !isNaN(v));
     if (vals.length === 0) return null;
     const sum = vals.reduce((a, b) => a + b, 0);
     return Math.round((sum / vals.length) * 10) / 10;
@@ -115,12 +133,14 @@ export default function StaffPage() {
       <header className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-black">Staff Management</h1>
-          <p className="text-sm text-gray-700 mt-1">Manage all staff members for the agency</p>
+          <p className="text-sm text-gray-700 mt-1">
+            Manage all staff members for the agency
+          </p>
         </div>
 
         <button
           onClick={() => setShowAddStaff(true)}
-          className="inline-flex items-center gap-2 h-10 px-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-600 transition"
+          className="inline-flex items-center gap-2 h-10 px-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition"
         >
           + Add New Staff
         </button>
@@ -139,7 +159,9 @@ export default function StaffPage() {
 
         <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
           <div className="text-sm text-gray-700">Avg. Satisfaction</div>
-          <div className="text-xl font-semibold text-black mt-2">{avgSatisfaction !== null ? avgSatisfaction : '—'}</div>
+          <div className="text-xl font-semibold text-black mt-2">
+            {avgSatisfaction !== null ? avgSatisfaction : "—"}
+          </div>
         </div>
       </section>
 
@@ -163,7 +185,7 @@ export default function StaffPage() {
             </thead>
             <tbody>
               {staff.map((s) => (
-                <tr key={(s.email || s.name)} className="border-t border-gray-200">
+                <tr key={s.email || s.name} className="border-t border-gray-200">
                   <td className="py-3 px-4">
                     <div className="font-medium text-gray-800">{s.name}</div>
                     <div className="text-xs text-gray-700">{s.email}</div>
@@ -173,7 +195,7 @@ export default function StaffPage() {
                   <td className="py-3 px-4">
                     <span
                       className={`inline-block px-3 py-1 rounded-full text-xs ${
-                        (s.status || '').toLowerCase() === "active"
+                        (s.status || "").toLowerCase() === "active"
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-gray-100 text-gray-700"
                       }`}
@@ -192,7 +214,7 @@ export default function StaffPage() {
       </section>
 
       {showAddStaff && (
-        <AddStaffModal onClose={() => setShowAddStaff(false)} onSave={() => fetchStaff()} />
+        <AddStaffModal onClose={() => setShowAddStaff(false)} onSave={fetchStaff} />
       )}
     </div>
   );

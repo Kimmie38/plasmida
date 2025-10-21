@@ -164,7 +164,17 @@ export default function SettingsPage() {
             <div className="text-sm text-gray-800">Download a copy of your data</div>
             <div className="flex items-center gap-2">
               <button className="h-10 px-3 rounded bg-blue-600 text-white hover:bg-blue-600 transition">Export</button>
-              <button className="h-10 px-3 rounded border border-gray-200 text-gray-800 hover:bg-gray-50 transition">Delete Account</button>
+              <button
+               onClick={() => {
+                    localStorage.removeItem("token");
+                    sessionStorage.clear();
+                    window.location.href = "/"; // redirect to login page
+                  }}
+                className="h-10 px-3 rounded border border-gray-200 text-gray-800 hover:bg-gray-50 transition"
+              >
+                Logout
+              </button>
+
             </div>
           </div>
         </div>
