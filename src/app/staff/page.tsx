@@ -16,6 +16,7 @@ type StaffRow = {
   satisfaction?: number | null;
 };
 
+// ✅ Format helpers
 function formatCurrencyNaira(input: number | string | undefined) {
   const num =
     typeof input === "string" ? Number(input.replace(/[^0-9.-]+/g, "")) : Number(input);
@@ -44,7 +45,6 @@ export default function StaffPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ Fetch staff data
   const fetchStaff = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -55,30 +55,28 @@ export default function StaffPage() {
 
       console.log("📡 Fetching staff from:", `${API_URL}/api/v1/plasmida/staff`);
 
-      const res = await safeFetch(`${API_URL}/api/v1/plasmida/staff`, {
-        method: "GET", // ✅ Explicitly use GET
+      // ✅ safeFetch already returns JSON, so no .json() here
+      const data = await safeFetch(`${API_URL}/api/v1/plasmida/staff`, {
+        method: "GET",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to load staff");
+      if (!data || !data.data || !Array.isArray(data.data)) {
+        throw new Error("Invalid staff data format");
+      }
 
-      // ✅ Validate and map staff
-      if (!Array.isArray(data.data)) throw new Error("Invalid response format");
-
+      // ✅ Load local satisfaction data
       let localSats: { email?: string; staffName?: string; satisfaction: number }[] = [];
       try {
-        if (typeof window !== "undefined") {
-          const raw = localStorage.getItem("plasmida_satisfaction");
-          if (raw) localSats = JSON.parse(raw);
-        }
+        const raw = localStorage.getItem("plasmida_satisfaction");
+        if (raw) localSats = JSON.parse(raw);
       } catch {
         localSats = [];
       }
 
+      // ✅ Map API response
       const mapped: StaffRow[] = data.data.map((item: any) => {
         const email = item.email || "";
         const local = localSats.find(
@@ -130,14 +128,12 @@ export default function StaffPage() {
 
   return (
     <div className="staff-page p-8 bg-gray-50 min-h-screen">
+      {/* Header */}
       <header className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-black">Staff Management</h1>
-          <p className="text-sm text-gray-700 mt-1">
-            Manage all staff members for the agency
-          </p>
+          <p className="text-sm text-gray-700 mt-1">Manage all staff members for the agency</p>
         </div>
-
         <button
           onClick={() => setShowAddStaff(true)}
           className="inline-flex items-center gap-2 h-10 px-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition"
@@ -146,18 +142,17 @@ export default function StaffPage() {
         </button>
       </header>
 
+      {/* Stats */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
+        <div className="rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
           <div className="text-sm text-gray-700">Total Staff</div>
           <div className="text-xl font-semibold text-black mt-2">{totalStaff}</div>
         </div>
-
-        <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
+        <div className="rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
           <div className="text-sm text-gray-700">Active Staff</div>
           <div className="text-xl font-semibold text-black mt-2">{activeStaff}</div>
         </div>
-
-        <div className="stat-card rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
+        <div className="rounded-lg bg-white p-4 border border-gray-200 shadow-sm">
           <div className="text-sm text-gray-700">Avg. Satisfaction</div>
           <div className="text-xl font-semibold text-black mt-2">
             {avgSatisfaction !== null ? avgSatisfaction : "—"}
@@ -165,11 +160,14 @@ export default function StaffPage() {
         </div>
       </section>
 
+      {/* Table */}
       <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
         {loading ? (
           <div className="py-12 text-center text-sm text-gray-600">Loading staff...</div>
         ) : error ? (
           <div className="py-12 text-center text-sm text-red-600">{error}</div>
+        ) : staff.length === 0 ? (
+          <div className="py-12 text-center text-sm text-gray-600">No staff members found.</div>
         ) : (
           <table className="w-full text-sm">
             <thead>
