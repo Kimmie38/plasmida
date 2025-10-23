@@ -129,7 +129,18 @@ export default function RepositoryPage() {
 
     const safeFetch = async (input: RequestInfo, init?: RequestInit, timeout = 10000) => {
       const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeout);
+      const id = setTimeout(() => {
+        try {
+          if (typeof DOMException !== 'undefined') {
+            // Provide a reason where supported to avoid noisy "signal is aborted without reason" logs
+            (controller as any).abort(new DOMException('Request timed out', 'AbortError'));
+          } else {
+            controller.abort();
+          }
+        } catch (e) {
+          try { controller.abort(); } catch (err) { /* ignore */ }
+        }
+      }, timeout);
       try {
         return await fetch(input, { signal: controller.signal, ...(init || {}) });
       } finally {
