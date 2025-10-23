@@ -7,7 +7,7 @@ import {
   FiUsers,
   FiMapPin,
   FiClock,
-  FiEye,
+  FiTrash2,
   FiDownload,
   FiDollarSign,
 } from "react-icons/fi";
@@ -393,7 +393,7 @@ export default function RepositoryPage() {
               <div className="mt-4 flex items-center justify-between">
                 <div className="text-xs text-slate-400">{c.size} · {c.uploaded}</div>
                 <div className="flex items-center gap-2">
-                  <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiEye /></button>
+                  <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiTrash2 /></button>
                   <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiDownload /></button>
                 </div>
               </div>
@@ -485,7 +485,7 @@ export default function RepositoryPage() {
             <div className="mt-4 flex items-center justify-between">
               <div className="text-xs text-slate-400">{c.size} · {c.uploaded}</div>
               <div className="flex items-center gap-2">
-                <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiEye /></button>
+                <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiTrash2 /></button>
                 <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiDownload /></button>
               </div>
             </div>
