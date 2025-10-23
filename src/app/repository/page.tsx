@@ -7,7 +7,7 @@ import {
   FiUsers,
   FiMapPin,
   FiClock,
-  FiEye,
+  FiTrash2,
   FiDownload,
   FiDollarSign,
 } from "react-icons/fi";
@@ -129,7 +129,18 @@ export default function RepositoryPage() {
 
     const safeFetch = async (input: RequestInfo, init?: RequestInit, timeout = 10000) => {
       const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeout);
+      const id = setTimeout(() => {
+        try {
+          if (typeof DOMException !== 'undefined') {
+            // Provide a reason where supported to avoid noisy "signal is aborted without reason" logs
+            (controller as any).abort(new DOMException('Request timed out', 'AbortError'));
+          } else {
+            controller.abort();
+          }
+        } catch (e) {
+          try { controller.abort(); } catch (err) { /* ignore */ }
+        }
+      }, timeout);
       try {
         return await fetch(input, { signal: controller.signal, ...(init || {}) });
       } finally {
@@ -179,6 +190,36 @@ export default function RepositoryPage() {
   }
 };
 
+  const handleDelete = async (id: number | string) => {
+    if (!id) return;
+    // Confirmation
+    if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) return;
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch(`/api/proxy/api/v1/plasmida/reports/${id}`, {
+        method: 'DELETE',
+        headers,
+      });
+
+      if (!res.ok) {
+        const body = await res.text().catch(() => null);
+        alert(`Failed to delete report (${res.status}): ${body || 'Unknown error'}`);
+        return;
+      }
+
+      // Optimistically update UI
+      setReports((prev) => prev.filter((r) => String(r.id) !== String(id)));
+      // notify other parts of the app
+      window.dispatchEvent(new CustomEvent('reports:updated'));
+    } catch (err) {
+      console.error('Delete error', err);
+      alert('Network error while deleting report');
+    }
+  };
 
   useEffect(() => {
     fetchReports();
@@ -393,7 +434,7 @@ export default function RepositoryPage() {
               <div className="mt-4 flex items-center justify-between">
                 <div className="text-xs text-slate-400">{c.size} · {c.uploaded}</div>
                 <div className="flex items-center gap-2">
-                  <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiEye /></button>
+                  <button onClick={() => handleDelete(c.id)} aria-label="Delete report" className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiTrash2 /></button>
                   <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiDownload /></button>
                 </div>
               </div>
@@ -485,7 +526,7 @@ export default function RepositoryPage() {
             <div className="mt-4 flex items-center justify-between">
               <div className="text-xs text-slate-400">{c.size} · {c.uploaded}</div>
               <div className="flex items-center gap-2">
-                <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiEye /></button>
+                <button onClick={() => handleDelete(c.id)} aria-label="Delete report" className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiTrash2 /></button>
                 <button className="h-8 w-8 rounded-md border border-slate-200 flex items-center justify-center text-slate-600"><FiDownload /></button>
               </div>
             </div>
