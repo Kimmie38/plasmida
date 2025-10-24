@@ -124,7 +124,7 @@ export default function BrowsePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-slate-500">Total Revenue</div>
-                  <div className="text-xl font-semibold text-emerald-600">₦9,650,000</div>
+                  <div className="text-xl font-semibold text-emerald-600">₦0</div>
                 </div>
                 <div className="h-10 w-10 rounded bg-slate-50 flex items-center justify-center text-emerald-600">
                   <FiTrendingUp />

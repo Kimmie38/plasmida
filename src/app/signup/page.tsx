@@ -46,7 +46,7 @@ export default function SignupPage() {
       if (res.ok) {
         setMessage("✅ Account created successfully! Redirecting...");
         setTimeout(() => {
-          router.push("/repository");
+          router.push("/");
         }, 2000);
       } else {
         setMessage(data.message || "❌ Signup failed. Try again.");
