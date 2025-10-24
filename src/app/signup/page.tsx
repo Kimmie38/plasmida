@@ -14,7 +14,7 @@ export default function SignupPage() {
   const [message, setMessage] = useState("");
 
   const router = useRouter();
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
