@@ -5,83 +5,71 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
-import { FiLock, FiMail } from "react-icons/fi";
+import { FiLock, FiMail, FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function HomeLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [loginDebug, setLoginDebug] = useState<any | null>(null);
+  const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     try {
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       if (token) router.push("/repository");
-    } catch (e) {
-
-    }
+    } catch (e) {}
   }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage("");
+    setMessage(null);
     setLoading(true);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL; // ✅ match your .env.local
-      if (!baseUrl) {
-        throw new Error("API base URL is not set. Please define NEXT_PUBLIC_API_URL in .env.local");
-      }
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+      if (!baseUrl) throw new Error("API base URL missing");
 
       const url = `${baseUrl}/api/v1/plasmida/auth/login`;
-
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      let data: any = null;
-      try {
-        data = await response.json();
-      } catch {
-        const text = await response.text().catch(() => null);
-        data = text || null;
-      }
+      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        const message =
-          typeof data === "object"
-            ? data?.message || "Login failed"
-            : String(data || "Login failed");
-        setErrorMessage(message);
-        setLoginDebug({ status: response.status, body: data });
-        console.error("Login failed", { status: response.status, body: data });
+        if (response.status === 401 || response.status === 400) {
+          setMessage({ type: "error", text: "Invalid email or password. Please try again." });
+        } else if (response.status === 404) {
+          setMessage({ type: "error", text: "Account not found. Please sign up first." });
+        } else {
+          setMessage({ type: "error", text: "Something went wrong. Please try again." });
+        }
         return;
       }
 
-      // ✅ Corrected: extract token properly
       const token = data?.data?.tokens?.token;
       if (!token) {
-        setErrorMessage("No token returned. Please try again.");
-        setLoginDebug({ status: response.status, body: data });
+        setMessage({ type: "error", text: "Account not found. Please Signup" });
         return;
       }
 
-      // ✅ Save token & redirect
       localStorage.setItem("token", token);
-      setLoginDebug({ status: response.status, body: data });
-      router.push("/repository");
+      setMessage({ type: "success", text: "Login successful! Redirecting..." });
+      setTimeout(() => router.push("/repository"), 1000);
     } catch (err: any) {
       console.error("Login error:", err);
-      setLoginDebug({ error: String(err) });
-      setErrorMessage(
-        err?.message?.includes("Failed to fetch")
-          ? "Network error or CORS issue. Check backend settings."
-          : err.message || "Unexpected error. Please try again."
-      );
+      setMessage({
+        type: "error",
+        text:
+          err?.message?.includes("Failed to fetch") ||
+          err?.message?.includes("NetworkError")
+            ? "Network error. Please check your connection."
+            : "An unexpected error occurred. Please try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -119,17 +107,16 @@ export default function HomeLogin() {
           type="button"
           className="flex h-11 items-center justify-center w-full gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition"
         >
-          <FcGoogle className="text-xl" aria-hidden />
-          <span className="text-sm font-medium text-slate-700">Continue with Google</span>
+          <span className="font-semibold  text-slate-700">Manange Reports</span>
         </button>
 
         <div className="flex items-center my-5">
           <hr className="flex-1 border-slate-200" />
-          <span className="px-3 text-slate-400 text-xs">OR</span>
+          <span className="px-3 text-slate-400 text-xs"></span>
           <hr className="flex-1 border-slate-200" />
         </div>
 
-        {/* LOGIN FORM */}
+
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="text-center">
             <span className="text-sm text-slate-500 mb-2 inline-block">Email</span>
@@ -152,31 +139,39 @@ export default function HomeLogin() {
           <div className="text-center">
             <span className="text-sm text-slate-500 mb-2 inline-block">Password</span>
             <div className="mx-auto max-w-full">
-              <div className="flex h-11 items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3">
+              <div className="relative flex h-11 items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3">
                 <FiLock className="text-slate-400 text-lg" aria-hidden />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
+                  className="w-full bg-transparent outline-none text-slate-700 placeholder:text-slate-400 pr-10"
                   autoComplete="current-password"
                   required
                 />
+                {/* Eye toggle button */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                >
+                  {showPassword ? <FiEyeOff className="text-lg" /> : <FiEye className="text-lg" />}
+                </button>
               </div>
             </div>
           </div>
 
-          {/* ERROR MESSAGE */}
-          {errorMessage && (
-            <p className="text-red-500 text-sm text-center">{errorMessage}</p>
-          )}
-
-          {loginDebug && (
-            <div className="mt-2 bg-slate-100 p-3 rounded text-xs text-slate-700">
-              <div className="font-medium mb-1">Debug info (copy for support):</div>
-              <pre className="whitespace-pre-wrap">{JSON.stringify(loginDebug, null, 2)}</pre>
-            </div>
+          {/* MESSAGE */}
+          {message && (
+            <p
+              className={`text-sm text-center ${
+                message.type === "error" ? "text-red-500" : "text-green-600"
+              }`}
+            >
+              {message.text}
+            </p>
           )}
 
           <button

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { FiArrowLeft, FiLock, FiMail } from "react-icons/fi";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"; // 👈 added
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,10 @@ export default function SignupPage() {
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  // 👇 added for eye toggle
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const router = useRouter();
   const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -32,14 +37,11 @@ export default function SignupPage() {
     setMessage("");
 
     try {
-      const res = await fetch(
-        `${API_URL}/api/v1/plasmida/auth/signup`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const res = await fetch(`${API_URL}/api/v1/plasmida/auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await res.json();
 
@@ -66,7 +68,10 @@ export default function SignupPage() {
 
       <section className="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-xl p-8 text-center">
         <div className="text-left">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-600 hover:underline">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-slate-600 hover:underline"
+          >
             <FiArrowLeft className="text-base" aria-hidden />
             Back to sign in
           </Link>
@@ -83,9 +88,12 @@ export default function SignupPage() {
           />
         </div>
 
-        <h2 className="text-lg font-semibold text-slate-800 mb-2">Create your account</h2>
+        <h2 className="text-lg font-semibold text-slate-800 mb-2">
+          Create your account
+        </h2>
 
         <form className="space-y-4 mt-2" onSubmit={handleSignup}>
+          {/* Email */}
           <div className="text-left">
             <span className="text-sm text-slate-500 mb-2 inline-block">Email</span>
             <div className="flex h-11 items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3">
@@ -103,12 +111,13 @@ export default function SignupPage() {
             </div>
           </div>
 
+          {/* Password */}
           <div className="text-left">
             <span className="text-sm text-slate-500 mb-2 inline-block">Password</span>
             <div className="flex h-11 items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3">
               <FiLock className="text-slate-400 text-lg" aria-hidden />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Choose a password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -117,15 +126,23 @@ export default function SignupPage() {
                 aria-label="Password"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-slate-500"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+              </button>
             </div>
           </div>
 
           <div className="text-left">
             <span className="text-sm text-slate-500 mb-2 inline-block">Confirm Password</span>
-            <div className="flex h-11 items-center gap-3 rounded-xl bg-white ring-1 ring-slate-200 px-3">
-              <FiLock className="text-slate-300 text-lg" aria-hidden />
+            <div className="flex h-11 items-center gap-3 rounded-xl bg-slate-50 ring-1 ring-slate-200 px-3">
+              <FiLock className="text-slate-400 text-lg" aria-hidden />
               <input
-                type="password"
+                type={showConfirm ? "text" : "password"}
                 placeholder="Re-enter password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
@@ -134,9 +151,18 @@ export default function SignupPage() {
                 aria-label="Confirm Password"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="text-slate-500"
+                aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+              >
+                {showConfirm ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+              </button>
             </div>
           </div>
 
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
@@ -147,6 +173,7 @@ export default function SignupPage() {
             {loading ? "Creating..." : "Create account"}
           </button>
 
+          {/* Message */}
           {message && (
             <p
               className={`text-sm text-center mt-3 ${
