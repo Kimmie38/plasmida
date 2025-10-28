@@ -442,7 +442,7 @@ export default function RepositoryPage() {
           ))}
         </div>
 
-        {/* Dots */}
+       
         <div className="dots mt-2 flex items-center justify-center gap-2">
           {filteredCards.map((_, i) => (
             <button
